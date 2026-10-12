@@ -23,7 +23,9 @@ npm test
 npm start
 ```
 
-Open `apps/android` in Android Studio. A reachable HTTPS backend is required for new transport searches. Use the `play` distribution for Play submission and the separate `github` distribution for APK updates. The existing app ID and encrypted data schema remain unchanged.
+Open `apps/android` in Android Studio. Fresh train searches, station catalogues and service reports use the original public CT Trains source even without a backend. A configured HTTPS backend is optional for rail and required for fresh MyCiTi/Golden Arrow data. Use the `play` distribution for Play submission and the separate `github` distribution for APK updates. The existing app ID and encrypted data schema remain unchanged.
+
+The 1.11.0 development candidate regressed fresh searches by removing that working source without deploying its replacement. The 1.11.1 repair restores the source, recovers the affected source preference, and adds an empty-cache, real-network home → routes → active-guidance acceptance check. See [the repair record](docs/production/train-regression-repair.md) for evidence and remaining limits.
 
 This is a production refinement in review. A development-signed candidate, passing fixtures or a design concept alone do not establish Google Play readiness. Production backend configuration, provider access, release signing, device evidence and Console checks must pass the release gates.
 

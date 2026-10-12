@@ -262,6 +262,6 @@ internal fun SourceSelector(state: TrainState, model: TrainViewModel) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             model.repository.sources.forEach { source -> FilterChip(selected = state.preferences.sourceId == source.id, onClick = { model.setSource(source.id) }, label = { Text(source.label) }) }
         }
-        Text("Scheduled rail information from CT Trains through Abeona. Saved results retain their original source and check time.", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text("Scheduled rail information from CT Trains. Saved results retain their original source and check time.", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }

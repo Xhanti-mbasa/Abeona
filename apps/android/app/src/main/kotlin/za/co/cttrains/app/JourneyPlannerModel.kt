@@ -30,6 +30,7 @@ class JourneyPlannerModel(app: Application): AndroidViewModel(app) {
     val state=mutable.asStateFlow()
     private var job: Job?=null
     fun clear() { job?.cancel();mutable.value=PlannerState() }
+    fun invalid(message: String) { job?.cancel();mutable.value=PlannerState(error=message) }
     fun find(request: PlannerRequest,train: TrainState) {
         val old=job;old?.cancel()
         job=viewModelScope.launch {

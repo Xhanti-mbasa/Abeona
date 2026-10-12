@@ -180,14 +180,22 @@ jobs:
             api: 36
             target: google_apis
             page_size: 4096
+            build_type: debug
           - distribution: play
             api: 36
             target: google_apis_ps16k
             page_size: 16384
+            build_type: debug
           - distribution: play
             api: 35
             target: google_apis
             page_size: 4096
+            build_type: debug
+          - distribution: github
+            api: 36
+            target: google_apis
+            page_size: 4096
+            build_type: release
     steps:
       - uses: actions/checkout@v4
         with:
@@ -206,7 +214,7 @@ jobs:
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
-      - name: Native storage, timetable, backup and settings tests
+      - name: Native fresh network journey, storage, backup and settings tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: ${{ matrix.api }}
@@ -215,12 +223,12 @@ jobs:
           profile: pixel_2
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          script: bash apps/android/scripts/check-device.sh ${{ matrix.distribution }} ${{ matrix.page_size }}
+          script: bash apps/android/scripts/check-device.sh ${{ matrix.distribution }} ${{ matrix.page_size }} ${{ matrix.build_type }}
       - name: Upload native test reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: android-device-reports-${{ matrix.distribution }}-${{ matrix.api }}-${{ matrix.page_size }}
+          name: android-device-reports-${{ matrix.distribution }}-${{ matrix.api }}-${{ matrix.page_size }}-${{ matrix.build_type }}
           path: |
             apps/android/app/build/reports/androidTests/connected/
             apps/android/app/build/outputs/androidTest-results/connected/

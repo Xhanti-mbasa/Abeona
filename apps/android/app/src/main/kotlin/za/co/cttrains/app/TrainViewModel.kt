@@ -74,7 +74,7 @@ class TrainViewModel(application: Application) : AndroidViewModel(application) {
                 MapEngine.mode(mapMode)
                 val visiblePreferences = preferences.copy(mapMode = mapMode)
                 if (repository.sources.none { it.id == preferences.sourceId }) {
-                    repository.updatePreferences { it.copy(sourceId = "cttrains-api") }
+                    repository.updatePreferences { it.copy(sourceId = repository.defaultSourceId) }
                     return@collect
                 }
                 mutableState.update { current ->
@@ -92,7 +92,7 @@ class TrainViewModel(application: Application) : AndroidViewModel(application) {
             mutableState.update { it.copy(catalog = initial) }
             try {
                 val requestedSource = repository.preferences.first().sourceId
-                val current = repository.refreshCatalog(if (repository.sources.any { it.id == requestedSource }) requestedSource else "cttrains-api")
+                val current = repository.refreshCatalog(if (repository.sources.any { it.id == requestedSource }) requestedSource else repository.defaultSourceId, force = false)
                 mutableState.update { it.copy(catalog = current, stationNotice = null) }
             } catch (error: Exception) {
                 if (error is kotlinx.coroutines.CancellationException) throw error
@@ -105,7 +105,7 @@ class TrainViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch(storageErrors) {
             val saved = runCatching { repository.savedAlerts() }.getOrNull()
             mutableState.update { it.copy(alerts = saved, alertsOffline = saved != null) }
-            refreshAlerts()
+            if (saved == null || System.currentTimeMillis() - saved.fetchedAt !in 0 until 5 * 60_000L) refreshAlerts()
         }
         viewModelScope.launch(storageErrors) {
             state.map { it.selectedJourney to it.stations }.distinctUntilChanged().collectLatest { (journey, stations) ->
@@ -133,7 +133,7 @@ class TrainViewModel(application: Application) : AndroidViewModel(application) {
     fun directionsPosition(point: CurrentPosition?)=mutableState.update { it.copy(currentPosition=point) }
     fun presentPlannedJourney(query: SearchQuery,journey: Journey,checked: Long,cached: Boolean,fares: String?,sourceId: String=state.value.preferences.sourceId,openMap: Boolean=true) {
         searchJob?.cancel()
-        mutableState.update { it.copy(from=query.from,to=query.to,
+        mutableState.update { it.copy(from=query.from,to=query.to,date=query.date,time=query.time,
             result=SearchResult(CachedSearch(query,listOf(journey),checked,fares,sourceId),cached),selectedJourney=journey,
             requestedScreen=if(openMap) "map" else it.requestedScreen,loading=false,error=null) }
     }

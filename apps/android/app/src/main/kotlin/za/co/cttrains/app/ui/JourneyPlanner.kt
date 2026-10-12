@@ -65,7 +65,14 @@ import za.co.cttrains.core.*
     val rail=TransportService.PRASA in services
     val board=if(s.access==null) train.from else s.boardingStation
     val arrive=if(s.destination==null) train.to else s.arrivalStation
-    fun runSearch() { if(from!=null && to!=null && from!=to && services.isNotEmpty()) planner.find(PlannerRequest(from,to,date,time,services,onlineWalks,if(autoWalk) 5000 else maxWalk,board,arrive),train) }
+    fun runSearch() {
+        when {
+            from==null || to==null -> planner.invalid("Choose a starting point and destination.")
+            from==to -> planner.invalid("Choose different starting and arrival stations or places.")
+            services.isEmpty() -> planner.invalid("Choose at least one transport provider.")
+            else -> planner.find(PlannerRequest(from,to,date,time,services,onlineWalks,if(autoWalk) 5000 else maxWalk,board,arrive),train)
+        }
+    }
     LaunchedEffect(from,to,board,arrive,date,time,mode,selected,onlineWalks,maxWalk,autoWalk,train.preferences.sourceId,s.extras.beta.goldenArrow,s.extras.beta.myCiti,showResults) { if(showResults) runSearch() else planner.clear() }
     BackHandler(showResults && !editTrip && !manual) { showResults=false }
     val options=result.sections.values.flatMap { it.options }
@@ -82,6 +89,9 @@ import za.co.cttrains.core.*
             item { Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.Top) { Column(Modifier.weight(1f)) { Text("Your routes",style=MaterialTheme.typography.headlineLarge);Text("${from?.label.orEmpty()} → ${to?.label.orEmpty()}",style=MaterialTheme.typography.titleSmall);Text("${runCatching { LocalDate.parse(date).format(DateTimeFormatter.ofPattern("EEE, d MMM")) }.getOrDefault(date)} · after $time",style=MaterialTheme.typography.bodySmall) };IconButton(onClick={ editTrip=true }) { Icon(Icons.Outlined.Edit,"Edit journey") } } }
         if(result.loading) item { LinearProgressIndicator(Modifier.fillMaxWidth());Text(result.progress,style=MaterialTheme.typography.labelSmall) }
         result.error?.let { error -> item { Text(error,color=MaterialTheme.colorScheme.error) } }
+        if(!result.loading && (result.error!=null || result.sections.values.any { it.options.isEmpty() })) item {
+            OutlinedButton(onClick={ runSearch() },modifier=Modifier.testTag("retry-journey-search")) { Text("Try again") }
+        }
         val complete=result.sections.values.flatMap { it.options }.filter { it.estimate.totalMinutes!=null && it.service!=TransportService.GOLDEN_ARROW }
         val fastest=if(!result.loading) complete.minByOrNull { it.estimate.totalMinutes!! }?.id else null
         services.forEach { service ->
@@ -201,7 +211,10 @@ import za.co.cttrains.core.*
         }
         finalStation=null
         picker=null
-        if(!start) { if(from==null) editTrip=true else showResults=true }
+        if(!editTrip) {
+            if(!start && from==null) picker=true
+            else if((start && to!=null) || (!start && from!=null)) showResults=true
+        }
     } }
     stationPicker?.let { start ->
         val endpoint=if(start) from else to
@@ -238,7 +251,7 @@ import za.co.cttrains.core.*
 }
 
 @Composable internal fun JourneyPlacePicker(train: TrainState,model: TrainViewModel,s: FeatureState,m: FeatureViewModel,start: Boolean,onDismiss: ()->Unit,onSelect: (WalkEndpoint)->Unit) {
-    var query by remember { mutableStateOf("") }
+    var query by remember(start) { mutableStateOf("") }
     var online by remember { mutableStateOf(false) }
     var suggestions by remember { mutableStateOf<List<PlaceSuggestion>>(emptyList()) }
     var issue by remember { mutableStateOf<String?>(null) }

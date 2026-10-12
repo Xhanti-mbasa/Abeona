@@ -38,6 +38,7 @@ android {
         buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", quoted(System.getenv("CTTRAINS_GOOGLE_WEB_CLIENT_ID") ?: localSecrets.getProperty("CTTRAINS_GOOGLE_WEB_CLIENT_ID", "")))
     }
     flavorDimensions += "distribution"
+    testBuildType = (System.getenv("CTTRAINS_TEST_BUILD_TYPE") ?: "debug").also { require(it in listOf("debug", "release")) }
     productFlavors {
         create("play") { dimension="distribution"; buildConfigField("boolean", "GITHUB_DISTRIBUTION", "false") }
         create("github") { dimension="distribution"; buildConfigField("boolean", "GITHUB_DISTRIBUTION", "true") }

@@ -35,14 +35,26 @@ class AbeonaJourneyUiTest {
         app.onNodeWithTag("home-destination").assertIsDisplayed()
         app.runOnUiThread { train.setTheme("Light") };app.waitUntil(15000) { train.state.value.preferences.theme=="Light" };app.waitForIdle();UiScreenshots.save("abeona-home-light")
     }
-    @Test fun cachedRouteCanBeChosenAndGuidancePreviewOpensOffline() {
-        val html=InstrumentationRegistry.getInstrumentation().context.assets.open("transfer.html").bufferedReader().use { it.readText() }
-        val query=SearchQuery("Unibell","Salt River",train.state.value.date,"07:00")
-        runBlocking { train.repository.store.cache(CachedSearch(query,CtTrainsParser.journeys(html,"07:00"),System.currentTimeMillis()-60000,sourceId="cttrains-web")) }
+    @Test fun freshLiveTrainSearchCanStartGuidanceWithoutAnyBackendOrSeededCache() {
+        assertTrue("This acceptance test must exercise the shipped unconfigured build",BuildConfig.TRANSIT_BASE_URL.isBlank())
+        val catalog=runBlocking { train.repository.refreshCatalog("cttrains-web") }
+        var day=java.time.LocalDate.now(CapeTownZone).plusDays(1)
+        while(day.dayOfWeek.value>5 || day.toString() in catalog.holidays) day=day.plusDays(1)
+        val query=SearchQuery("Unibell","Salt River",day.toString(),"07:00")
+        runBlocking { train.repository.clearCache();train.repository.updatePreferences { it.copy(sourceId="cttrains-web") } }
+        assertNull(runBlocking { train.repository.store.cached(query,"cttrains-web") })
+        app.runOnUiThread { features.place(null,true);features.place(null,false);train.edit { it.copy(from="",to="",date=query.date,time=query.time,catalog=catalog) } }
         app.onNodeWithTag("home-destination").performClick();app.onNodeWithText("Search places, stations or stops").performTextInput("Salt River")
         app.onNodeWithTag("place-choice:station:saltriver").performScrollTo().performClick()
-        app.waitUntil(20000) { app.onAllNodesWithTag("start-selected-journey").fetchSemanticsNodes().isNotEmpty() }
-        app.onNodeWithText("Your routes").assertIsDisplayed();app.onNodeWithTag("start-selected-journey").assertIsDisplayed();UiScreenshots.save("abeona-results-dark")
+        app.onNodeWithText("Search places, stations or stops").performTextInput("Unibell")
+        app.onNodeWithTag("place-choice:station:unibell").performScrollTo().performClick()
+        app.waitUntil(120000) { app.onAllNodesWithTag("start-selected-journey").fetchSemanticsNodes().isNotEmpty() }
+        val fresh=runBlocking { train.repository.store.cached(query,"cttrains-web") }
+        assertNotNull("The UI must have fetched a new timetable",fresh)
+        assertTrue(fresh!!.journeys.isNotEmpty());assertTrue(fresh.provenance!!.sourceAvailable);assertFalse(fresh.provenance!!.cached)
+        assertEquals("scheduled",fresh.provenance!!.kind)
+        android.util.Log.i("AbeonaLiveAcceptance","fresh-source=${fresh.sourceId}; query=$query; options=${fresh.journeys.size}; fetchedAt=${fresh.fetchedAt}; backend=absent; seededCache=false")
+        app.onNodeWithText("Your routes").assertIsDisplayed();app.onNodeWithTag("start-selected-journey").assertIsDisplayed();UiScreenshots.save("abeona-live-results-dark")
         app.onNodeWithTag("start-selected-journey").performClick()
         app.waitUntil(15000) { app.onAllNodesWithTag("directions-screen").fetchSemanticsNodes().isNotEmpty() }
         app.onNodeWithTag("directions-screen").assertIsDisplayed();app.onNodeWithTag("nav:plan").assertDoesNotExist()
@@ -71,12 +83,12 @@ class AbeonaJourneyUiTest {
         runBlocking { val reopened=FeatureStore(app.activity).extras().spots.first { it.name=="Evening class" };assertEquals(saved.id,reopened.id);assertEquals(saved.point,reopened.point) }
         runBlocking { features.store.update { it.copy(spots=it.spots.filterNot { p->p.id==saved.id }) } }
     }
-    @Test fun legacySourcePreferenceMigrationPreservesPlacesAndTheme() {
-        runBlocking { train.repository.updatePreferences { it.copy(sourceId="cttrains-web",theme="Dark",favoriteStations=listOf("Unibell")) } }
-        app.waitUntil(15000) { train.state.value.preferences.run { sourceId=="cttrains-api" && theme=="Dark" && favoriteStations==listOf("Unibell") } }
+    @Test fun brokenBuildSourcePreferenceRecoversWithoutLosingStationsOrTheme() {
+        runBlocking { train.repository.updatePreferences { it.copy(sourceId="cttrains-api",theme="Dark",favoriteStations=listOf("Unibell")) } }
+        app.waitUntil(15000) { train.state.value.preferences.run { sourceId=="cttrains-web" && theme=="Dark" && favoriteStations==listOf("Unibell") } }
         app.runOnUiThread { train.setTheme("Light") }
         app.waitUntil(15000) { train.state.value.preferences.theme=="Light" }
         app.activityRule.scenario.recreate()
-        runBlocking { val reopened=TrainRepository(app.activity).store.preferences.first();assertEquals("cttrains-api",reopened.sourceId);assertEquals("Light",reopened.theme);assertEquals(listOf("Unibell"),reopened.favoriteStations) }
+        runBlocking { val reopened=TrainRepository(app.activity).store.preferences.first();assertEquals("cttrains-web",reopened.sourceId);assertEquals("Light",reopened.theme);assertEquals(listOf("Unibell"),reopened.favoriteStations) }
     }
 }
