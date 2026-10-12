@@ -2,6 +2,8 @@
 
 result: passed
 
+Repair follow-up: six native release captures refreshed from source 6a846b6 / workflow 38313077461. The result and guidance screenshots now use an actual empty-cache public train fetch. The approved design/tokens are unchanged; the earlier combined comparisons below remain historical visual evidence, not proof of fresh data in 1.11.0.
+
 Scope: the user-selected graphite/citron direction implemented as a native Kotlin/Compose Android product. This result covers the representative Home, route-results and active-journey presentation and the checked native states. It does not certify Google Play readiness or field accuracy.
 
 ## Grounding and capture context

@@ -6,10 +6,10 @@ Status: **not Google Play ready**. Fill evidence and dates for the exact source 
 
 - [x] Recover existing source with blob-hash provenance; preserve package/database identity.
 - [x] Approve visual direction and implement native design tokens/navigation.
-- [x] Move operator extraction and PDF execution to the backend monorepo.
+- [x] Move bus/PDF execution to the backend monorepo; restore the bounded public Android rail connection after the backend-only regression.
 - [x] Separate Play updates from GitHub installer source/permission.
 - [x] Add contract/outage/cache/retry checks; Node suite passed 29 tests.
-- [x] Engineering source f1e8359 passes Android builds/lint and 27 critical device tests on GitHub API 36, Play API 35, and Play API 36/16 KB.
+- [x] Source 6a846b6 passes builds/lint, 30 debug device checks in each existing configuration and 27 real-app release checks. Fresh train search has no seeded cache or backend requirement.
 - [x] Compare actual Home/results/active captures against the approved design; scoped native QA passed.
 - [x] Verify local candidate AAB/APK identities, permissions, installer exclusion, signatures, 16 KB packaging and SHA-256; exact evidence in verification.md.
 - [x] Verify all six 64-bit native ELF load alignments, 16 KB bundle configuration and APK ZIP alignment; strict Play API 36/16 KB runtime suite passed.

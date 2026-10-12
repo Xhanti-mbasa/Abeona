@@ -1,14 +1,14 @@
-# Native candidate screenshots
+# Native repair screenshots
 
-These are actual 1080 × 1920 app captures from engineering source f1e8359, workflow 38291485295. They show controlled fixtures and demonstrate functionality; they do not establish current timetable availability. Pixel content is preserved, with PNG conversion to RGB for listing format. No image-generation concept, fake vehicle position or raster retouch is used.
+Actual 1080 × 1920 native GitHub release app captures from source 6a846b6, workflow 38313077461, Android 16 / 4 KB. Routes and active guidance show the real unseeded CT Trains search; Home/settings/saved/recurring records are controlled test data. There is no generated vehicle position, AI concept or raster retouch. Fully opaque captures are exported as 24-bit PNG with RGB pixels unchanged.
 
-| File | Suggested alt text |
+| File | State |
 | --- | --- |
-| 01-home-dark.png | Abeona Home in dark mode with destination search and optional nearby stations |
-| 02-home-light.png | The same journey-planning Home in light mode |
-| 03-route-results.png | Cached scheduled routes with transfer information and a selected journey |
-| 04-active-journey.png | Active phone guidance with boarding confirmation, pause and stop |
-| 05-saved-places.png | Home address and preferred station alongside Work and School places |
-| 06-recurring-journeys.png | A recurring commute with editable days and reminders |
+| 01-home-dark.png | Home, dark theme, one destination search and optional stations |
+| 02-home-light.png | Home in light theme |
+| 03-route-results.png | Newly fetched scheduled Unibell → Salt River options |
+| 04-active-journey.png | Started phone guidance using the newly fetched itinerary |
+| 05-saved-places.png | Editable Home and preferred station; Work/School roles |
+| 06-recurring-journeys.png | Editable recurring weekday commute |
 
-capture-manifest.json records source, device, dimensions and checksums. Saved places uses the inspected clean Play/Android 15 capture; the other images use GitHub/Android 16. Final publication requires review and recapture with the production build/configuration, suitable sample data, and clean system notification state. Do not present the fixture times as live provider evidence.
+capture-manifest.json records source/device/checksums. Native runtime uses release defaults; the downloadable artifact has the build.14 version metadata and matching development signature. Final store publication requires production configuration, clean notification state and owner review. These screenshots do not claim GPS accuracy, current vehicle positions or future source availability.

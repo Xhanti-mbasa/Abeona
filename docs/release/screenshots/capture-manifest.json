@@ -2,79 +2,91 @@
   {
     "file": "01-home-dark.png",
     "originalCapture": "abeona-home-dark.png",
-    "sourceCommit": "f1e8359deec49964e3f3dd2179872ed1fe4bfce8",
-    "workflow": 38291485295,
-    "device": "github-36",
+    "sourceCommit": "6a846b60bc31f349dccee192f54414dbe5180931",
+    "workflow": 38313077461,
+    "device": "github-release-36-4096",
     "size": [
       1080,
       1920
     ],
-    "sha256": "26ef83c981d94989cb786cee34fb61085606c40ce687c066723b19cf689e1f39",
-    "state": "native app with controlled fixture data; no live vehicle claim"
+    "sha256": "81421aaa3a86d15abd25160fb8a14e14049a3de2ec89706f8f02b4aaf5f5c193",
+    "state": "native release app with controlled places and settings; no vehicle-tracking claim",
+    "originalCaptureSha256": "5e34ceba93484db4e4acc662302502772aa53c2e91018d134cfb86ad5efdae36",
+    "export": "24-bit PNG; RGB pixels unchanged, opaque alpha removed"
   },
   {
     "file": "02-home-light.png",
     "originalCapture": "abeona-home-light.png",
-    "sourceCommit": "f1e8359deec49964e3f3dd2179872ed1fe4bfce8",
-    "workflow": 38291485295,
-    "device": "github-36",
+    "sourceCommit": "6a846b60bc31f349dccee192f54414dbe5180931",
+    "workflow": 38313077461,
+    "device": "github-release-36-4096",
     "size": [
       1080,
       1920
     ],
-    "sha256": "dc532eb1408ddee09bd4f11c1c8e3051303e4cecf49a5ed115b7ee97b13d6ead",
-    "state": "native app with controlled fixture data; no live vehicle claim"
+    "sha256": "512e93e531ac25a9624672a8e8a4c69615a0498e583a8a59041b9b2fcaf3c8e3",
+    "state": "native release app with controlled places and settings; no vehicle-tracking claim",
+    "originalCaptureSha256": "1087229c282c40cf220d30454673c628b72874c3b91ccb3a8868f12377f5d11f",
+    "export": "24-bit PNG; RGB pixels unchanged, opaque alpha removed"
   },
   {
     "file": "03-route-results.png",
-    "originalCapture": "abeona-results-dark.png",
-    "sourceCommit": "f1e8359deec49964e3f3dd2179872ed1fe4bfce8",
-    "workflow": 38291485295,
-    "device": "github-36",
+    "originalCapture": "abeona-live-results-dark.png",
+    "sourceCommit": "6a846b60bc31f349dccee192f54414dbe5180931",
+    "workflow": 38313077461,
+    "device": "github-release-36-4096",
     "size": [
       1080,
       1920
     ],
-    "sha256": "d3ff4cbd9f0e9b185d96ee18581bcd48508ef4f4dddb3233b717d68ab4b2e587",
-    "state": "native app with controlled fixture data; no live vehicle claim"
+    "sha256": "1663530aab439f566a74545b9ebe587daa11479c2bc7d3bf9271caaa34bd4fda",
+    "state": "fresh public scheduled train search, no seeded query cache",
+    "originalCaptureSha256": "7d20deb3e0df30f1cf40b80742e44c070c0cc7e31a724f18150a28c851bb8cc2",
+    "export": "24-bit PNG; RGB pixels unchanged, opaque alpha removed"
   },
   {
     "file": "04-active-journey.png",
     "originalCapture": "abeona-active-dark.png",
-    "sourceCommit": "f1e8359deec49964e3f3dd2179872ed1fe4bfce8",
-    "workflow": 38291485295,
-    "device": "github-36",
+    "sourceCommit": "6a846b60bc31f349dccee192f54414dbe5180931",
+    "workflow": 38313077461,
+    "device": "github-release-36-4096",
     "size": [
       1080,
       1920
     ],
-    "sha256": "8655bd0c484ca0c8b985a537add80c152d3ca9c972198593e40cfe8065b59589",
-    "state": "native app with controlled fixture data; no live vehicle claim"
+    "sha256": "60090611e35661f2e043e94f053fa7c2b57dbba2b19f1eea7baf3b8d601d8caa",
+    "state": "fresh public scheduled train search, no seeded query cache",
+    "originalCaptureSha256": "3bbea5be813c6d167a001975dc697a9867d7f7d706a2e319d0e4c54cad0c7c90",
+    "export": "24-bit PNG; RGB pixels unchanged, opaque alpha removed"
   },
   {
     "file": "05-saved-places.png",
     "originalCapture": "abeona-saved-places.png",
-    "sourceCommit": "f1e8359deec49964e3f3dd2179872ed1fe4bfce8",
-    "workflow": 38291485295,
-    "device": "play-35",
+    "sourceCommit": "6a846b60bc31f349dccee192f54414dbe5180931",
+    "workflow": 38313077461,
+    "device": "github-release-36-4096",
     "size": [
       1080,
       1920
     ],
-    "sha256": "8ab41286291cc31b4b11bb086e4864c944dbbaed0c671b42861645f879e2c032",
-    "state": "native app with controlled fixture data; no live vehicle claim"
+    "sha256": "b1a8ae601c38d4f0826c48fb11a45fdedc75692c6c9ebe81a19e7a00235832b3",
+    "state": "native release app with controlled places and settings; no vehicle-tracking claim",
+    "originalCaptureSha256": "01591d4d8682f4d99da27a6759f84be6ef5a202d663ae2c51e1552fd921cfa41",
+    "export": "24-bit PNG; RGB pixels unchanged, opaque alpha removed"
   },
   {
     "file": "06-recurring-journeys.png",
     "originalCapture": "recurring-journeys.png",
-    "sourceCommit": "f1e8359deec49964e3f3dd2179872ed1fe4bfce8",
-    "workflow": 38291485295,
-    "device": "github-36",
+    "sourceCommit": "6a846b60bc31f349dccee192f54414dbe5180931",
+    "workflow": 38313077461,
+    "device": "github-release-36-4096",
     "size": [
       1080,
       1920
     ],
-    "sha256": "265ab0f617ecb743ee4f15f317bea4174ffc8334fc9280b882c503b7c0297e23",
-    "state": "native app with controlled fixture data; no live vehicle claim"
+    "sha256": "ef1edecf46bc5228f45e9b3d1eb2e109bcf5adf118435a685cfd786d42e9a07e",
+    "state": "native release app with controlled places and settings; no vehicle-tracking claim",
+    "originalCaptureSha256": "338d55db0f38319b6620533df758de4cb96c9493e8e971e3ab23fe7e0635c24a",
+    "export": "24-bit PNG; RGB pixels unchanged, opaque alpha removed"
   }
 ]
