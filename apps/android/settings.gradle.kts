@@ -3,5 +3,7 @@ dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories { google(); mavenCentral() }
 }
-rootProject.name = "CTTrains"
+rootProject.name = "Abeona"
 include(":app", ":core")
+
+project(":core").projectDir = file("../../packages/transit-core")

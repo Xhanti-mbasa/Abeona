@@ -5,7 +5,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const express = require('express');
 const { createMobileRouter } = require('../routes/mobile');
-const fixture = name => fs.readFileSync(path.join(__dirname, '../../android/core/src/test/resources', `${name}.html`), 'utf8');
+const fixture = name => fs.readFileSync(path.join(__dirname, '../../../../fixtures/providers/html', `${name}.html`), 'utf8');
 async function server(t, schedule = fixture('transfer')) {
   const entries = new Map(); let timetableCalls = 0;
   const router = createMobileRouter({ currentDate: () => '2026-10-01', cacheStore: { get: async key => entries.get(key), set: async (key, value) => entries.set(key, value) },

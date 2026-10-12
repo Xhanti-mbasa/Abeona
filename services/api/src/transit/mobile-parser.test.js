@@ -4,7 +4,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const { parseCatalog, parseJourneys, parseFares, validateQuery } = require('./mobile-parser');
-const fixture = name => fs.readFileSync(path.join(__dirname, '../../android/core/src/test/resources', `${name}.html`), 'utf8');
+const fixture = name => fs.readFileSync(path.join(__dirname, '../../../../fixtures/providers/html', `${name}.html`), 'utf8');
 test('catalogue retains source stations and holiday policy', () => {
   const c = parseCatalog(fixture('catalog'));
   assert.ok(c.stations.includes('Unibell')); assert.ok(c.stations.includes('Salt River')); assert.ok(c.stations.length > 90);

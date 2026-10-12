@@ -4,9 +4,9 @@ on:
   push:
     branches: [main]
     tags: ["android-v*"]
-    paths: ["android/**", "src/transit/**", "src/routes/mobile.js", "src/index.js", "package*.json", ".github/workflows/android.yml"]
+    paths: ["apps/android/**", "services/**", "packages/**", "workers/**", "fixtures/**", "package*.json", ".github/workflows/android.yml"]
   pull_request:
-    paths: ["android/**", "src/transit/**", "src/routes/mobile.js", "src/index.js", "package*.json", ".github/workflows/android.yml"]
+    paths: ["apps/android/**", "services/**", "packages/**", "workers/**", "fixtures/**", "package*.json", ".github/workflows/android.yml"]
   workflow_dispatch:
     inputs:
       tag:
@@ -37,7 +37,7 @@ jobs:
       signing: ${{ steps.signing.outputs.mode || 'development' }}
     defaults:
       run:
-        working-directory: android
+        working-directory: apps/android
         shell: bash
     steps:
       - uses: actions/checkout@v4
@@ -141,7 +141,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: cttrains-release-apk
-          path: android/dist/*
+          path: apps/android/dist/*
           if-no-files-found: error
       - name: Upload test and lint reports
         if: always()
@@ -149,9 +149,9 @@ jobs:
         with:
           name: android-check-reports
           path: |
-            android/core/build/reports/tests/test/
-            android/app/build/reports/lint-results-*.html
-            android/app/schemas/
+            apps/android/core/build/reports/tests/test/
+            apps/android/app/build/reports/lint-results-*.html
+            apps/android/app/schemas/
       - name: Remove signing key
         if: always()
         run: rm -f -- "${RUNNER_TEMP}/cttrains-release.jks"
@@ -186,16 +186,16 @@ jobs:
           profile: pixel_2
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          script: bash android/scripts/check-device.sh
+          script: bash apps/android/scripts/check-device.sh
       - name: Upload native test reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: android-device-reports
           path: |
-            android/app/build/reports/androidTests/connected/
-            android/app/build/outputs/androidTest-results/connected/
-            android/app/build/outputs/ui-screenshots/
+            apps/android/app/build/reports/androidTests/connected/
+            apps/android/app/build/outputs/androidTest-results/connected/
+            apps/android/app/build/outputs/ui-screenshots/
 
   publish:
     needs: [build, device]
@@ -222,4 +222,4 @@ jobs:
           VERSION: ${{ needs.build.outputs.version }}
           SOURCE_SHA: ${{ needs.build.outputs.source_sha }}
           SIGNING_MODE: ${{ needs.build.outputs.signing }}
-        run: bash android/scripts/publish-release.sh
+        run: bash apps/android/scripts/publish-release.sh

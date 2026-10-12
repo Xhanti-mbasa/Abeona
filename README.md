@@ -15,9 +15,9 @@ An unofficial REST API and Model Context Protocol (MCP) server for Cape Town Met
 
 ## Android app
 
-The [`android/`](android/README.md) directory contains a native **Kotlin + Jetpack Compose + Google Material 3** transit app: online and downloadable offline MapLibre/OpenFreeMap maps without Google keys or login, full-screen maps with mapped rail traces and numbered transfer/platform details, native CT Trains alerts, journey planning, local fare corrections and budget totals, favourites, saved leave-by plans with custom backup reminders, service tools and user-reviewed calendar export. Private content uses encrypted local Room storage. It works with direct CT Trains access or the normalized `/mobile/v1` backend. Open `android/` in Android Studio. See the [setup and limits](android/README.md) and [staged architecture](android/docs/TRANSIT_ARCHITECTURE.md).
+The [`apps/android/`](apps/android/README.md) directory contains a native **Kotlin + Jetpack Compose + Google Material 3** transit app: online and downloadable offline MapLibre/OpenFreeMap maps without Google keys or login, full-screen maps with mapped rail traces and numbered transfer/platform details, native CT Trains alerts, journey planning, local fare corrections and budget totals, favourites, saved leave-by plans with custom backup reminders, service tools and user-reviewed calendar export. Private content uses encrypted local Room storage. It works with direct CT Trains access or the normalized `/mobile/v1` backend. Open `apps/android/` in Android Studio. See the [setup and limits](apps/android/README.md) and [staged architecture](apps/android/docs/TRANSIT_ARCHITECTURE.md).
 
-The **Android build and release** GitHub Action tests, lints and builds both APK variants. Publishing a verified APK and checksum to GitHub Releases now requires an explicit manual run with `publish_github_release` enabled. Development-signed builds are labelled prereleases; optional private signing secrets support production releases. See the [release instructions](android/README.md#github-releases).
+The **Android build and release** GitHub Action tests, lints and builds both APK variants. Publishing a verified APK and checksum to GitHub Releases now requires an explicit manual run with `publish_github_release` enabled. Development-signed builds are labelled prereleases; optional private signing secrets support production releases. See the [release instructions](apps/android/README.md#github-releases).
 
 > **Disclaimer:** This project is a community-built tool and is **not affiliated with or endorsed by Metrorail or PRASA**. 
 
@@ -81,7 +81,7 @@ To run the API directly on your host machine without Docker:
 This repository comes with native **Model Context Protocol (MCP)** support, allowing AI agents to look up train schedules directly!
 
 ### Connect your AI via Stdio Transport
-You can connect an MCP-compatible AI client (like Claude Desktop) to the `src/mcp-server.js` script. Add this to your AI client's configuration:
+You can connect an MCP-compatible AI client (like Claude Desktop) to the `services/api/src/mcp-server.js` script. Add this to your AI client's configuration:
 
 ```json
 {

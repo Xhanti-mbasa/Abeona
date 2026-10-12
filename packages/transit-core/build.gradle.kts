@@ -6,3 +6,5 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
 }
 tasks.test { systemProperty("cttrains.assets", rootProject.file("app/src/main/assets").absolutePath) }
+
+sourceSets.test { resources.srcDir(rootProject.file("../../fixtures/providers/html")) }
