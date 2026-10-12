@@ -10,3 +10,5 @@ dependencies {
     implementation("org.apache.pdfbox:pdfbox:3.0.7")
     testImplementation("junit:junit:4.13.2")
 }
+
+sourceSets.test { resources.srcDir(file("../../fixtures/providers/pdf")) }

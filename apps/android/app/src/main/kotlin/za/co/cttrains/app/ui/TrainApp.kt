@@ -107,7 +107,7 @@ fun TrainApp(state: TrainState, model: TrainViewModel) {
                 composable("trips") { SafetyTripsScreen(state,feature,features) }
                 composable("whatsapp") { za.co.cttrains.app.whatsapp.WhatsAppScreen({ go("community") },{ go("trips") }) }
                 composable("community") { CommunityScreen(state,feature,features,model) { go("settings") } }
-                composable("directions") { DirectionsScreen(state,model,feature,{ go("plan") },{ navigation.navigate("directions/map") { launchSingleTop=true } },{ go("trips") }) }
+                composable("directions") { DirectionsScreen(state,model,feature,{ go("plan") },{ navigation.navigate("directions/map") { launchSingleTop=true } },{ go("trips") },features::stopLive) }
                 composable("directions/map") { DirectionsMapScreen(state,model,feature,{ navigation.popBackStack() }) }
                 composable("app-updates") { za.co.cttrains.app.updates.UpdatesScreen() }
             }

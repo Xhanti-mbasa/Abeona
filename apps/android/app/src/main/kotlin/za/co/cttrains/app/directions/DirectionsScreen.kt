@@ -38,7 +38,7 @@ import za.co.cttrains.core.*
         }
     }
 }
-@Composable fun DirectionsScreen(train: TrainState,trainModel: TrainViewModel,features: FeatureState,onPlan: ()->Unit,onMap: ()->Unit,onSharing: ()->Unit) {
+@Composable fun DirectionsScreen(train: TrainState,trainModel: TrainViewModel,features: FeatureState,onPlan: ()->Unit,onMap: ()->Unit,onSharing: ()->Unit,onStopSharing: ()->Unit={}) {
     val m: DirectionsModel=androidx.lifecycle.viewmodel.compose.viewModel()
     val state by m.state.collectAsStateWithLifecycle()
     val c=LocalContext.current
@@ -77,7 +77,7 @@ import za.co.cttrains.core.*
                 if(next!=null) item { Surface(color=MaterialTheme.colorScheme.surfaceContainer,shape=MaterialTheme.shapes.medium) { Column(Modifier.fillMaxWidth().padding(14.dp)) { Text("Up next",style=MaterialTheme.typography.labelLarge,color=MaterialTheme.colorScheme.primary);Text(next.title,style=MaterialTheme.typography.titleMedium);Text(next.detail,style=MaterialTheme.typography.bodySmall) } } }
                 item { plan.steps.lastOrNull { it.scheduledAt!=null }?.scheduledAt?.let { Text("Scheduled arrival · ${java.time.Instant.ofEpochMilli(it).atZone(CapeTownZone).toLocalTime().toString().take(5)}",style=MaterialTheme.typography.titleSmall) };Text(if(plan.sourceCheckedAt>0) "Timetable checked ${java.time.Instant.ofEpochMilli(plan.sourceCheckedAt).atZone(CapeTownZone).toLocalDateTime()}" else "Source date unavailable · check before travelling",style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant);if(plan.notice.isNotBlank()) Text(plan.notice,style=MaterialTheme.typography.bodySmall) }
                 item { Row(verticalAlignment=Alignment.CenterVertically) { Icon(Icons.Outlined.VolumeUp,null);Spacer(Modifier.width(12.dp));Text("Spoken guidance",Modifier.weight(1f));Switch(voice,{ voice=it;DirectionSpeech.enabled(c,it);if(!it) speech.stop();if(state.running) m.command("voice") }) } }
-                item { Row(verticalAlignment=Alignment.CenterVertically) { Icon(Icons.Outlined.Share,null);Spacer(Modifier.width(12.dp));Column(Modifier.weight(1f)) { Text("Location sharing");Text(if(features.live?.sharing==true) "Active · open to stop" else "Off · private by default",style=MaterialTheme.typography.bodySmall) };TextButton(onClick=onSharing) { Text(if(features.live?.sharing==true) "Manage" else "Set up") } } }
+                item { Row(verticalAlignment=Alignment.CenterVertically) { Icon(Icons.Outlined.Share,null);Spacer(Modifier.width(12.dp));Column(Modifier.weight(1f)) { Text("Location sharing");Text(if(features.live?.sharing==true) "Active · open to stop" else "Off · private by default",style=MaterialTheme.typography.bodySmall) };TextButton(onClick={ if(features.live?.sharing==true) onStopSharing() else onSharing() }) { Text(if(features.live?.sharing==true) "Stop sharing" else "Set up") } } }
                 if(session==null || !state.running) item { Text("Active directions use location on this phone for up to four hours, with a visible notification. Sharing requires a separate, time-limited session.",style=MaterialTheme.typography.bodySmall) }
                 item { TextButton(onClick={ steps=!steps }) { Text(if(steps) "Hide itinerary" else "Full itinerary") } }
                 if(steps) itemsIndexed(plan.steps,key={ _,s->s.id }) { i,s->Column { Text("${i+1}. ${s.title}",style=MaterialTheme.typography.titleSmall);Text(s.detail,style=MaterialTheme.typography.bodySmall) } }

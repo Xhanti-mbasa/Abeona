@@ -6,7 +6,7 @@ import kotlinx.serialization.encodeToString
 import za.co.cttrains.app.data.SecureCodec
 import za.co.cttrains.core.*
 
-@Serializable data class UpdateSettings(val repository: String="Xhanti-mbasa/cttrains-api",val token: String="",val beta: Boolean=true,val automatic: Boolean=false)
+@Serializable data class UpdateSettings(val repository: String="Xhanti-mbasa/Abeona",val token: String="",val beta: Boolean=true,val automatic: Boolean=false)
 /** Credentials and staged update metadata are device-only and never included in portable backups. */
 class UpdateStore(c: Context) {
     private val prefs=c.getSharedPreferences("app-updates-private",Context.MODE_PRIVATE)

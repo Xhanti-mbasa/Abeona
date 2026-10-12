@@ -118,7 +118,7 @@ jobs:
             exit 1
           fi
           mkdir -p dist
-          filename="CT-Trains-${VERSION}-${SIGNING_MODE}.apk"
+          filename="Abeona-${VERSION}-${SIGNING_MODE}.apk"
           cp "$apk" "dist/$filename"
           python3 scripts/write-update-manifest.py --apk "dist/$filename" --output dist/update.json
           (cd dist && sha256sum "$filename" > "$filename.sha256")
@@ -152,12 +152,17 @@ jobs:
             packages/transit-core/build/reports/tests/test/
             apps/android/app/build/reports/lint-results-*.html
             apps/android/app/schemas/
+      - name: Validate the exact Play candidate bundle
+        run: |
+          curl --fail --location --silent --show-error https://github.com/google/bundletool/releases/download/1.18.3/bundletool-all-1.18.3.jar -o "${RUNNER_TEMP}/bundletool.jar"
+          python3 scripts/verify-play-bundle.py --bundle app/build/outputs/bundle/playRelease/app-play-release.aab --bundletool "${RUNNER_TEMP}/bundletool.jar" --output dist/play-verification.json
       - name: Upload Play candidate bundle and scraper distribution
         uses: actions/upload-artifact@v4
         with:
           name: abeona-play-candidate
           path: |
             apps/android/app/build/outputs/bundle/playRelease/app-play-release.aab
+            apps/android/dist/play-verification.json
             workers/scrapers/build/install/scrapers/
           if-no-files-found: error
       - name: Remove signing key

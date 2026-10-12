@@ -42,7 +42,7 @@ class UpdateDownloadWorker(c: Context,p: WorkerParameters): CoroutineWorker(c,p)
             val update=TripFiles.json.decodeFromString<AppUpdate>(inputData.getString("update") ?: return Result.failure())
             UpdateWork.channel(applicationContext)
             val cancel=WorkManager.getInstance(applicationContext).createCancelPendingIntent(id)
-            val builder=NotificationCompat.Builder(applicationContext,"app-updates").setSmallIcon(R.drawable.ic_train).setContentTitle("Downloading CT Trains ${update.manifest.versionName}")
+            val builder=NotificationCompat.Builder(applicationContext,"app-updates").setSmallIcon(R.drawable.ic_train).setContentTitle("Downloading Abeona ${update.manifest.versionName}")
                 .setContentText("Your current app keeps working").setContentIntent(UpdateWork.open(applicationContext)).setOngoing(true).setOnlyAlertOnce(true)
                 .setProgress(100,0,true).addAction(0,"Cancel download",cancel)
             suspend fun foreground() { val note=builder.build();setForeground(if(Build.VERSION.SDK_INT>=29) ForegroundInfo(1912,note,ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC) else ForegroundInfo(1912,note)) }

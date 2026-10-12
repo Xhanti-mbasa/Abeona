@@ -77,7 +77,7 @@ import za.co.cttrains.app.BuildConfig
         } } }
         item { TextButton(onClick={ help=!help }) { Text(if(help) "Hide setup guide" else "How do updates work?") } }
         if(help) item { Column(verticalArrangement=Arrangement.spacedBy(8.dp)) {
-            Text("1. Use this repo, or a public repository that publishes CT Trains releases. Each release must contain its signed APK and update.json.")
+            Text("1. Use this repo, or a public repository that publishes Abeona releases. Each release must contain its signed APK and update.json.")
             Text("2. For a private repo, create a fine-grained GitHub token for only that repo, with Contents: read-only. Set an expiry and enter it above. Never use your password or a write/admin token.")
             Text("3. Tap Check, review the release, then Download. A failed or cancelled download leaves the current app installed.")
             Text("4. Tap Install verified update. Android may ask you to allow installs from CT Trains and confirm installation. Your local data stays in place during a compatible upgrade.")
