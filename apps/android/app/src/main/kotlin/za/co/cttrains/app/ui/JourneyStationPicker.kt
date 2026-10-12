@@ -36,16 +36,7 @@ internal fun stationDistance(station: StationPosition,point: GeoPoint): String {
     val matches=remember(ranked,query) { ranked.filter { it.name.contains(query,true) } }
     ModalBottomSheet(onDismissRequest=onDismiss,sheetState=rememberModalBottomSheetState(skipPartiallyExpanded=true)) {
         LazyColumn(Modifier.fillMaxWidth().imePadding().testTag("journey-station-picker"),contentPadding=PaddingValues(16.dp),verticalArrangement=Arrangement.spacedBy(6.dp)) {
-            item {
-                Text(if(start) "Choose your boarding station" else "Choose your arrival station",style=MaterialTheme.typography.titleLarge)
-                Text("${place.label} · closest to furthest",style=MaterialTheme.typography.bodyMedium)
-                Text("Proximity is straight-line distance. You can choose a station that works better for you; walking paths are calculated when planning.",style=MaterialTheme.typography.bodySmall)
-                OutlinedTextField(query,{ query=it.take(100) },label={ Text("Search stations") },singleLine=true,modifier=Modifier.fillMaxWidth())
-                if(spot!=null) Row(Modifier.fillMaxWidth().clickable { rememberForSpot=!rememberForSpot }) {
-                    Checkbox(rememberForSpot,{ rememberForSpot=it });Text("Remember station for ${spot.name}",modifier=Modifier.padding(top=12.dp))
-                }
-                TextButton(onClick={ onSelect(null,spot!=null && rememberForSpot) }) { Text("Auto · find nearby usable stations") }
-            }
+            item { StationPickerHeader(start,place.label,query,{ query=it.take(100) },spot?.name,rememberForSpot,{ rememberForSpot=it },{ onSelect(null,spot!=null && rememberForSpot) }) }
             items(matches,key={ stationKey(it.name) }) { station ->
                 ListItem(headlineContent={ Text(station.name) },supportingContent={ Text("${stationDistance(station,place.point)}${if(station==ranked.firstOrNull()) " · closest" else ""}${if(stationKey(station.name)==chosen?.let(::stationKey)) " · selected" else ""}") },
                     modifier=Modifier.testTag("station-choice:${stationKey(station.name)}").clickable { onSelect(station.name,spot!=null && rememberForSpot) })
@@ -67,4 +58,13 @@ internal fun stationDistance(station: StationPosition,point: GeoPoint): String {
             item { Button(onClick={ onSave(name.trim().ifBlank { tag },tag) },enabled=!busy,modifier=Modifier.fillMaxWidth()) { Text("Save place") } }
         }
     }
+}
+
+@Composable private fun StationPickerHeader(start: Boolean,place: String,query: String,onQuery: (String)->Unit,spotName: String?,save: Boolean,onSave: (Boolean)->Unit,onAuto: ()->Unit) {
+    Text(if(start) "Choose your boarding station" else "Choose your arrival station",style=MaterialTheme.typography.titleLarge)
+    Text("$place · closest to furthest",style=MaterialTheme.typography.bodyMedium)
+    Text("Proximity is straight-line distance. Choose any station that works for you; mapped walks are checked when planning.",style=MaterialTheme.typography.bodySmall)
+    OutlinedTextField(query,onQuery,label={ Text("Search stations") },singleLine=true,modifier=Modifier.fillMaxWidth())
+    if(spotName!=null) Row(Modifier.fillMaxWidth().clickable { onSave(!save) }) { Checkbox(save,onSave);Text("Remember station for $spotName",modifier=Modifier.padding(top=12.dp)) }
+    TextButton(onClick=onAuto) { Text("Auto · find nearby usable stations") }
 }

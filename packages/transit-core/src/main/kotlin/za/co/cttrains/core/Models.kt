@@ -45,7 +45,7 @@ data class StationCatalog(val stations: List<String>, val holidays: List<String>
 data class SavedRoute(val from: String, val to: String)
 
 @Serializable
-data class CachedSearch(val query: SearchQuery, val journeys: List<Journey>, val fetchedAt: Long, val fares: String? = null, val sourceId: String = "cttrains-web")
+data class CachedSearch(val query: SearchQuery, val journeys: List<Journey>, val fetchedAt: Long, val fares: String? = null, val sourceId: String = "cttrains-web",val provenance: DataProvenance?=null)
 
 object CachePolicy {
     const val MAX_ENTRIES = 12

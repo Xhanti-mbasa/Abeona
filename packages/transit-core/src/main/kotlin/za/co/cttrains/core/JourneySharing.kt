@@ -12,8 +12,8 @@ object JourneySharing {
         val steps=plan.steps.map { step->
             when(step.kind) {
                 DirectionKind.WALK-> { at+=((step.durationSeconds ?: 0.0)*1000.0).toLong();TripStep("walk",null,step.title.take(180),at) }
-                DirectionKind.BOARD-> { at=step.scheduledAt ?: at;TripStep("board",service,step.title.take(180),at) }
-                DirectionKind.RIDE-> { at=step.scheduledAt ?: at;TripStep("alight",service,step.title.take(180),at) }
+                DirectionKind.BOARD-> { at=step.scheduledAt ?: at;TripStep("board",step.service ?: service,step.title.take(180),at) }
+                DirectionKind.RIDE-> { at=step.scheduledAt ?: at;TripStep("alight",step.service ?: service,step.title.take(180),at) }
             }
         }
         return TripFiles.validate(SafetyTrip(id=UUID.randomUUID().toString(),owner=owner.trim().ifBlank { "Traveller" }.take(80),createdAt=now,steps=steps,sourceCheckedAt=plan.sourceCheckedAt,note="Shared itinerary · scheduled times, not live tracking. "+plan.notice.take(400)))

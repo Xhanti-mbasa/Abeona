@@ -75,7 +75,7 @@ import za.co.cttrains.core.*
     else if(!showResults) AbeonaHome(train,model,s,m,from,board,date,time,{ picker=false },{ picker=true },{ datePicker=true },{ timePicker=true },{ stationPicker=true },{ editTrip=true },{ showResults=true })
     else Column(Modifier.fillMaxSize().testTag("route-results")) {
         LazyColumn(Modifier.weight(1f),contentPadding=PaddingValues(20.dp),verticalArrangement=Arrangement.spacedBy(14.dp)) {
-            item { Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.Top) { Column(Modifier.weight(1f)) { Text("Your routes",style=MaterialTheme.typography.headlineLarge);Text("${from?.label.orEmpty()} → ${to?.label.orEmpty()}",style=MaterialTheme.typography.titleSmall);Text("$date · leave after $time",style=MaterialTheme.typography.bodySmall) };IconButton(onClick={ editTrip=true }) { Icon(Icons.Outlined.Edit,"Edit journey") } } }
+            item { Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.Top) { Column(Modifier.weight(1f)) { Text("Your routes",style=MaterialTheme.typography.headlineLarge);Text("${from?.label.orEmpty()} → ${to?.label.orEmpty()}",style=MaterialTheme.typography.titleSmall);Text("${runCatching { LocalDate.parse(date).format(DateTimeFormatter.ofPattern("EEE, d MMM")) }.getOrDefault(date)} · after $time",style=MaterialTheme.typography.bodySmall) };IconButton(onClick={ editTrip=true }) { Icon(Icons.Outlined.Edit,"Edit journey") } } }
         if(result.loading) item { LinearProgressIndicator(Modifier.fillMaxWidth());Text(result.progress,style=MaterialTheme.typography.labelSmall) }
         result.error?.let { error -> item { Text(error,color=MaterialTheme.colorScheme.error) } }
         val complete=result.sections.values.flatMap { it.options }.filter { it.estimate.totalMinutes!=null && it.service!=TransportService.GOLDEN_ARROW }
@@ -85,7 +85,7 @@ import za.co.cttrains.core.*
             if(!s.extras.beta.enabled(service)) item {
                 Card(Modifier.fillMaxWidth()) { Column(Modifier.padding(14.dp)) { Text("${service.title} is disabled",style=MaterialTheme.typography.titleMedium);TextButton(onClick=onSettings) { Text("Enable in Beta features") } } }
             } else if(section!=null) {
-                item { Text(service.title,style=MaterialTheme.typography.titleMedium,fontWeight=FontWeight.Bold) }
+                if(services.size>1) item { Text(service.title,style=MaterialTheme.typography.titleMedium,fontWeight=FontWeight.Bold) }
                 if(section.options.isEmpty()) item {
                     Text(section.issue ?: "No supported journey found.",style=MaterialTheme.typography.bodyMedium)
                     if(service!=TransportService.PRASA) TextButton(onClick={ mode=service.name;manual=true;m.chooseBus(service) }) { Text("Manual bus setup") }
@@ -279,22 +279,25 @@ import za.co.cttrains.core.*
     var fare by remember(option.id) { mutableStateOf(option.fares.firstOrNull()) }
     val clock=remember { DateTimeFormatter.ofPattern("HH:mm").withZone(CapeTownZone) }
     Card(onClick=onSelect,modifier=Modifier.fillMaxWidth().testTag("route-option:${option.id}"),border=BorderStroke(if(selected) 1.5.dp else 1.dp,if(selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant),colors=CardDefaults.cardColors(containerColor=MaterialTheme.colorScheme.surfaceContainer)) { Column(Modifier.padding(16.dp),verticalArrangement=Arrangement.spacedBy(8.dp)) {
-        if(fastest) Text("Fastest complete option found",style=MaterialTheme.typography.labelMedium,color=MaterialTheme.colorScheme.primary)
-        Text(option.estimate.totalMinutes?.let { "$it min door to door" } ?: "${option.rideMinutes} min on board · walking time unknown",style=MaterialTheme.typography.headlineSmall)
-        Text("${option.board} → ${option.alight}",style=MaterialTheme.typography.bodyMedium)
+        if(fastest) Text("Fastest complete route",style=MaterialTheme.typography.labelMedium,color=MaterialTheme.colorScheme.primary)
+        Text(option.estimate.totalMinutes?.let { "$it min" } ?: "${option.rideMinutes} min on board",style=MaterialTheme.typography.headlineSmall)
+        if(option.estimate.totalMinutes==null) Text("Walking time unavailable",style=MaterialTheme.typography.bodySmall)
+        Text(if(option.parts.isNotEmpty()) "Rail + MyCiTi" else "${option.board} → ${option.alight}",style=MaterialTheme.typography.bodyMedium)
+        option.rail?.takeIf { it.transfers>0 }?.let { journey -> Text("${journey.transfers} ${if(journey.transfers==1) "change" else "changes"} · ${journey.legs.drop(1).joinToString { it.departure.name }}",style=MaterialTheme.typography.bodySmall) }
         Text("Board ${clock.format(Instant.ofEpochMilli(option.estimate.departureAt))}${option.estimate.arrivalAt?.let { " · arrive ${clock.format(Instant.ofEpochMilli(it))}" }.orEmpty()}",style=MaterialTheme.typography.bodySmall)
         Text("Walk ${option.estimate.walkingMinutes?.let { "$it min" } ?: "unknown"} · wait ${option.estimate.waitingMinutes?.let { "$it min + 5 min buffer" } ?: "unknown"}",style=MaterialTheme.typography.bodySmall)
-        Text(fare?.let { "Fare ${money(it.cents)} · ${it.label}" } ?: "Single fare unknown",style=MaterialTheme.typography.bodyMedium)
-        Text("${option.service.title} · ${if(option.cached) "Cached schedule" else "Scheduled"} · checked ${checked(option.fetchedAt)}",style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(fare?.let { "Fare ${money(it.cents)} · ${it.label}" } ?: "Fare unavailable",style=MaterialTheme.typography.bodyMedium)
+        Text("${option.service.title} · ${if(option.cached) "Cached schedule" else "Scheduled"} · checked ${java.time.Instant.ofEpochMilli(option.fetchedAt).atZone(CapeTownZone).format(DateTimeFormatter.ofPattern("d MMM, HH:mm"))}",style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant)
         TextButton(onClick={ details=!details }) { Text(if(details) "Hide details" else "Route details") }
         if(details) FlowRow(horizontalArrangement=Arrangement.spacedBy(8.dp)) {
             TextButton(onClick=onView) { Text("View map") }
             ShareJourneyButton(m) { val state=model.state.value;JourneySharing.itinerary(za.co.cttrains.app.directions.DirectionsPlans.option(option,state,s),option.service,s.extras.localName,System.currentTimeMillis()) }
-            if(option.service==TransportService.PRASA) TextButton(onClick=onSchedule) { Text("Save & reminders") }
-            if(option.service!=TransportService.PRASA) TextButton(onClick={ val b=option.bus!!;repeatEdit=CommuteRoutine(java.util.UUID.randomUUID().toString(),"${s.access?.label ?: option.board} → ${s.destination?.label ?: option.alight}".take(100),SearchQuery(option.board,option.alight,java.time.Instant.ofEpochMilli(option.estimate.departureAt).atZone(CapeTownZone).toLocalDate().toString(),b.departure.time),setOf(1,2,3,4,5),option.service.name,option.walks.firstOrNull { it.to.id.startsWith("bus:") }?.minutes ?: 0,5,origin=s.access ?: b.board?.let { WalkEndpoint("bus:${option.service.name}:${it.id}",it.name.take(100),it.point) },destination=s.destination ?: b.alight?.let { WalkEndpoint("bus:${option.service.name}:${it.id}",it.name.take(100),it.point) },createdAt=System.currentTimeMillis(),service=option.service,busRoute=b.timetable.route,boardCallId=b.departure.id,alightCallId=b.arrival.id) }) { Text("Repeat journey") }
-            if(option.service!=TransportService.PRASA) TextButton(onClick={ selectFare=true }) { Text("Choose fare") }
+            if(option.parts.isEmpty() && option.service==TransportService.PRASA) TextButton(onClick=onSchedule) { Text("Save & reminders") }
+            if(option.parts.isEmpty() && option.service!=TransportService.PRASA) TextButton(onClick={ val b=option.bus!!;repeatEdit=CommuteRoutine(java.util.UUID.randomUUID().toString(),"${s.access?.label ?: option.board} → ${s.destination?.label ?: option.alight}".take(100),SearchQuery(option.board,option.alight,java.time.Instant.ofEpochMilli(option.estimate.departureAt).atZone(CapeTownZone).toLocalDate().toString(),b.departure.time),setOf(1,2,3,4,5),option.service.name,option.walks.firstOrNull { it.to.id.startsWith("bus:") }?.minutes ?: 0,5,origin=s.access ?: b.board?.let { WalkEndpoint("bus:${option.service.name}:${it.id}",it.name.take(100),it.point) },destination=s.destination ?: b.alight?.let { WalkEndpoint("bus:${option.service.name}:${it.id}",it.name.take(100),it.point) },createdAt=System.currentTimeMillis(),service=option.service,busRoute=b.timetable.route,boardCallId=b.departure.id,alightCallId=b.arrival.id) }) { Text("Repeat journey") }
+            if(option.parts.isEmpty() && option.service!=TransportService.PRASA) TextButton(onClick={ selectFare=true }) { Text("Choose fare") }
         }
         if(details) {
+            option.parts.forEach { part -> Text("${part.service.title} · ${part.board} → ${part.alight}",style=MaterialTheme.typography.titleSmall);Text(part.fares.firstOrNull()?.let { "Fare ${money(it.cents)}" } ?: "Stage fare unavailable",style=MaterialTheme.typography.bodySmall) }
             option.walks.forEach { leg -> PlannerWalk(leg,s,m) }
             option.rail?.legs?.forEach { leg -> Text("Train ${leg.train} · ${leg.departure.name} ${leg.departure.time} → ${leg.arrival.name} ${leg.arrival.time}",style=MaterialTheme.typography.bodySmall) }
             option.bus?.let { j -> Text("${j.timetable.route.title}\nBoard ${j.departure.name} · get off ${j.arrival.name}",style=MaterialTheme.typography.bodySmall) }

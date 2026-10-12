@@ -7,7 +7,7 @@ import kotlin.math.*
 @Serializable data class WalkInstruction(val point: GeoPoint,val text: String,val distanceFromStart: Double)
 @Serializable data class DirectionStep(val id: String,val kind: DirectionKind,val title: String,val detail: String,val target: GeoPoint?,
     val points: List<GeoPoint> = emptyList(),val instructions: List<WalkInstruction> = emptyList(),val distanceMeters: Double?=null,
-    val durationSeconds: Double?=null,val scheduledAt: Long?=null)
+    val durationSeconds: Double?=null,val scheduledAt: Long?=null,val service: TransportService?=null)
 @Serializable data class DirectionsPlan(val id: String,val title: String,val steps: List<DirectionStep>,val createdAt: Long,val sourceCheckedAt: Long,val notice: String="")
 @Serializable data class DirectionsSession(val plan: DirectionsPlan,val index: Int=0,val startedAt: Long,val paused: Boolean=false,val promote: Boolean=true) {
     val finished get()=index>=plan.steps.size

@@ -63,7 +63,7 @@ class TrainRepository(private val context: Context) {
             val url="${BuildConfig.TRANSIT_BASE_URL}/mobile/v1/journeys".toHttpUrl().newBuilder().addQueryParameter("from",query.from).addQueryParameter("to",query.to).addQueryParameter("date",query.date).addQueryParameter("time",query.time).build().toString()
             val entry=validateTransitEntry(json.decodeFromString<CachedSearch>(get(url)),query,"cttrains-api",System.currentTimeMillis())
             store.cache(entry)
-            return SearchResult(entry, false)
+            return SearchResult(entry,entry.provenance?.cached==true || entry.provenance?.sourceAvailable==false)
         } catch (error: Exception) {
             if (error is kotlinx.coroutines.CancellationException) throw error
             return (store.cached(query,sourceId) ?: store.cached(query,"cttrains-api") ?: store.cached(query,"cttrains-web"))?.let { SearchResult(it,true) } ?: throw error

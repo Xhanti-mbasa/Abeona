@@ -90,7 +90,7 @@ import za.co.cttrains.core.*
         }
     }
     if(setup) AlertDialog(onDismissRequest={ setup=false },title={ Text("Journey notifications") },text={ Column(Modifier.heightIn(max=400.dp).verticalScroll(rememberScrollState())) { LiveDirectionsSetup() } },confirmButton={ TextButton(onClick={ setup=false }) { Text("Done") } })
-    if(stopping) AlertDialog(onDismissRequest={ stopping=false },title={ Text("Stop this journey?") },text={ Text("Directions and GPS sampling will end. Stop any separate sharing session in sharing settings.") },confirmButton={ TextButton(onClick={ m.stop();stopping=false;onPlan() }) { Text("Stop journey") } },dismissButton={ TextButton(onClick={ stopping=false }) { Text("Continue") } })
+    if(stopping) AlertDialog(onDismissRequest={ stopping=false },title={ Text("Stop this journey?") },text={ Text("Directions and GPS sampling will end. Stop any separate sharing session in sharing settings.") },confirmButton={ TextButton(onClick={ m.stop();stopping=false;onPlan() },modifier=Modifier.testTag("confirm-stop-journey")) { Text("Stop journey") } },dismissButton={ TextButton(onClick={ stopping=false }) { Text("Continue") } })
 }
 @Composable fun LiveDirectionsSetup() {
     val c=LocalContext.current

@@ -28,6 +28,7 @@ import za.co.cttrains.core.*
     }
     LazyColumn(Modifier.fillMaxSize().testTag("saved-addresses"),contentPadding=PaddingValues(16.dp),verticalArrangement=Arrangement.spacedBy(12.dp)) {
         item { Text("Saved places",style=MaterialTheme.typography.headlineLarge);Text("Your familiar places, ready when you are.",color=MaterialTheme.colorScheme.onSurfaceVariant) }
+        item { FeatureStatus(s) }
         items(SavedAddresses.labels) { label->
             val spot=s.extras.spots.firstOrNull { SavedAddresses.role(it)==label }
             AddressCard(label,spot,{ edit(label,spot?.id) },{ spot?.let { use(it,true) } },{ spot?.let { use(it,false) } },{ stationChoice=spot },{ removing=spot })

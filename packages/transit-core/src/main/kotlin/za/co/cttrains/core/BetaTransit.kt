@@ -31,10 +31,10 @@ import kotlin.math.*
 }
 @Serializable data class BusFareRow(val id: String, val title: String, val products: Map<String, Long>, val rules: String = "")
 @Serializable data class BusSnapshot(val service: TransportService, val fetchedAt: Long, val routes: List<BusRouteDocument>, val stops: List<BusStopPoint>, val shapes: List<BusShape>, val fares: List<BusFareRow>, val mapNote: String, val fareDate: String? = null,
-    val mapFetchedAt: Long = fetchedAt, val catalogueCheckedAt: Long = fetchedAt, val faresCheckedAt: Long = fetchedAt, val notes: List<String> = emptyList())
+    val mapFetchedAt: Long = fetchedAt, val catalogueCheckedAt: Long = fetchedAt, val faresCheckedAt: Long = fetchedAt, val notes: List<String> = emptyList(),val provenance: DataProvenance?=null)
 @Serializable data class BusCall(val id: String, val name: String, val time: String, val platform: String? = null, val status: String = "Scheduled")
 @Serializable data class BusTrip(val id: String, val route: String, val direction: String, val day: String, val calls: List<BusCall>, val notes: String = "",val validFrom: String? = null)
-@Serializable data class BusTimetable(val service: TransportService, val route: BusRouteDocument, val day: String, val fetchedAt: Long, val trips: List<BusTrip>, val sourceFile: String? = null)
+@Serializable data class BusTimetable(val service: TransportService, val route: BusRouteDocument, val day: String, val fetchedAt: Long, val trips: List<BusTrip>, val sourceFile: String? = null,val provenance: DataProvenance?=null)
 
 object BusSources {
     const val GABS = "https://www.gabs.co.za/Timetable.aspx"

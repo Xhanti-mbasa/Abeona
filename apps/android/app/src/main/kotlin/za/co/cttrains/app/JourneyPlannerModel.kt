@@ -12,10 +12,10 @@ import java.time.LocalTime
 
 data class PlannerRequest(val from: WalkEndpoint,val to: WalkEndpoint,val date: String,val time: String,val services: Set<TransportService>,val walking: Boolean,val maxWalkMeters: Int=1500,
     val boardingStation: String?=null,val arrivalStation: String?=null)
-data class PlannerOption(val id: String,val service: TransportService,val query: SearchQuery?,val rail: Journey?,val bus: BusJourney?,val walks: List<WalkingLeg>,val estimate: TripEstimate,val fares: List<RouteFare>,val fetchedAt: Long,val cached: Boolean,val notice: String="",val sourceId: String="cttrains-web") {
-    val board get()=rail?.legs?.first()?.departure?.name ?: bus!!.departure.name
-    val alight get()=rail?.legs?.last()?.arrival?.name ?: bus!!.arrival.name
-    val rideMinutes get()=rail?.durationMinutes ?: bus!!.minutes
+data class PlannerOption(val id: String,val service: TransportService,val query: SearchQuery?,val rail: Journey?,val bus: BusJourney?,val walks: List<WalkingLeg>,val estimate: TripEstimate,val fares: List<RouteFare>,val fetchedAt: Long,val cached: Boolean,val notice: String="",val sourceId: String="cttrains-web",val parts: List<PlannerOption> = emptyList()) {
+    val board: String get()=parts.firstOrNull()?.board ?: rail?.legs?.first()?.departure?.name ?: bus!!.departure.name
+    val alight: String get()=parts.lastOrNull()?.alight ?: rail?.legs?.last()?.arrival?.name ?: bus!!.arrival.name
+    val rideMinutes: Int get()=if(parts.isNotEmpty()) parts.sumOf { it.rideMinutes } else rail?.durationMinutes ?: bus!!.minutes
 }
 data class GoldenTimetableCandidate(val timetable: BusTimetable,val cached: Boolean)
 data class PlannerSection(val service: TransportService,val options: List<PlannerOption> = emptyList(),val issue: String?=null,val searchedRoutes: Int=0,val candidates: List<GoldenTimetableCandidate> = emptyList())
@@ -45,6 +45,10 @@ class JourneyPlannerModel(app: Application): AndroidViewModel(app) {
                     val section=try { if(service==TransportService.PRASA) rail(request,train) else bus(request,service) }
                     catch(e: Exception) { if(e is CancellationException) throw e;PlannerSection(service,issue="${service.title} could not be checked. Retry or open its published timetable. Any saved results retain their original dates.") }
                     mutable.update { it.copy(sections=it.sections+(service to section)) }
+                }
+                if(request.walking && TransportService.PRASA in request.services && TransportService.MYCITI in request.services && buses.store.extras().beta.myCiti) {
+                    val mixed=try { intermodal(request,train) } catch(e: Exception) { if(e is CancellationException) throw e;emptyList() }
+                    if(mixed.isNotEmpty()) mutable.update { old->val section=old.sections[TransportService.PRASA] ?: PlannerSection(TransportService.PRASA);old.copy(sections=old.sections+(TransportService.PRASA to section.copy(options=rank(section.options+mixed)))) }
                 }
             } catch(e: Exception) { if(e is CancellationException) throw e;mutable.update { it.copy(error="Choose different mapped places and a valid date/time.") } }
             finally { if(isActive) mutable.update { it.copy(loading=false,progress="") } }
@@ -98,7 +102,7 @@ class JourneyPlannerModel(app: Application): AndroidViewModel(app) {
         if(!extras.beta.enabled(service)) return PlannerSection(service,issue="Enable ${service.title} independently in Settings → Beta features.")
         val saved=buses.store.snapshot(service)
         val needsCatalogue=service==TransportService.GOLDEN_ARROW && (saved==null || saved.routes.map { it.title.firstOrNull() }.distinct().size<2)
-        val snapshot=if(saved==null || needsCatalogue) buses.refresh(service) else saved
+        val snapshot=if(saved==null || needsCatalogue || System.currentTimeMillis()-saved.fetchedAt>24*60*60_000L) buses.refresh(service) else saved
         val date=LocalDate.parse(r.date);val day=date.dayOfWeek.name.lowercase().replaceFirstChar(Char::uppercase)
         val routes=withContext(Dispatchers.Default) { BusDiscovery.routes(snapshot,r.from.point,r.to.point,date,extras.busStopLinks,r.maxWalkMeters.toDouble()) }
         if(routes.isEmpty()) {
@@ -139,6 +143,40 @@ class JourneyPlannerModel(app: Application): AndroidViewModel(app) {
         }
         val note=buildList { if(routes.size>6) add("Checked 6 of ${routes.size} candidate routes; narrow the stops for wider coverage.");if(failed>0) add("$failed timetable checks failed.");add("Direct trips only; bus transfers are not searched.") }.joinToString(" ")
         return PlannerSection(service,rank(options),if(options.isEmpty()) "No supported published trip you can catch was found after ${r.time}. $note" else note,routes.take(6).size)
+    }
+    /** Two bounded interchanges, using official MyCiTi timed stops and mapped transfer walks. */
+    private suspend fun intermodal(r: PlannerRequest,train: TrainState): List<PlannerOption> {
+        val snapshot=buses.store.snapshot(TransportService.MYCITI) ?: return emptyList()
+        val hubs=StationChoices.ranked(r.from.point,train.stations,train.catalog.stations).filter { station->
+            snapshot.stops.any { NearbySuggestions.distance(WalkingRoutes.endpoint(station).point,it.point)<=1200 }
+        }.sortedBy { station->val point=WalkingRoutes.endpoint(station).point;NearbySuggestions.distance(r.from.point,point)+NearbySuggestions.distance(point,r.to.point) }.take(2)
+        val found=mutableListOf<PlannerOption>()
+        for(hub in hubs) {
+            currentCoroutineContext().ensureActive();mutable.update { it.copy(progress="Checking rail + MyCiTi connections via ${hub.name}…") }
+            val point=WalkingRoutes.endpoint(hub)
+            val railFirst=rail(r.copy(to=point,arrivalStation=hub.name),train).options.filter { it.estimate.totalMinutes!=null }.take(1)
+            for(first in railFirst) {
+                val at=first.estimate.arrivalAt ?: continue
+                val local=java.time.Instant.ofEpochMilli(at).atZone(CapeTownZone)
+                if(local.toLocalDate().toString()!=r.date) continue
+                val second=bus(r.copy(from=point,time=local.toLocalTime().toString().take(5),boardingStation=null),TransportService.MYCITI).options.firstOrNull { it.estimate.totalMinutes!=null } ?: continue
+                mixed(first,second,r)?.let(found::add)
+            }
+            val busFirst=bus(r.copy(to=point,arrivalStation=null),TransportService.MYCITI).options.filter { it.estimate.totalMinutes!=null }.take(1)
+            for(first in busFirst) {
+                val at=first.estimate.arrivalAt ?: continue
+                val local=java.time.Instant.ofEpochMilli(at).atZone(CapeTownZone)
+                if(local.toLocalDate().toString()!=r.date) continue
+                val second=rail(r.copy(from=point,time=local.toLocalTime().toString().take(5),boardingStation=hub.name),train).options.firstOrNull { it.estimate.totalMinutes!=null } ?: continue
+                mixed(first,second,r)?.let(found::add)
+            }
+        }
+        return rank(found)
+    }
+    private fun mixed(first: PlannerOption,second: PlannerOption,r: PlannerRequest): PlannerOption? {
+        val estimate=IntermodalJourneys.connect(first.estimate,second.estimate,JourneyComparison.requestedAt(r.date,r.time)) ?: return null
+        return PlannerOption("mixed:${first.id}:${second.id}",TransportService.PRASA,null,null,second.bus ?: first.bus,first.walks+second.walks,estimate,emptyList(),minOf(first.fetchedAt,second.fetchedAt),first.cached || second.cached,
+            "Rail + MyCiTi · mapped transfer walk and boarding buffers included. Fares are shown separately by stage. Recurring mixed journeys are not supported.","mixed",listOf(first,second))
     }
     private fun rank(options: List<PlannerOption>)=options.distinctBy { it.id }.sortedWith(compareBy<PlannerOption> { it.estimate.totalMinutes ?: Int.MAX_VALUE }.thenBy { it.estimate.arrivalAt ?: Long.MAX_VALUE }.thenBy { it.estimate.departureAt }).take(12)
 }

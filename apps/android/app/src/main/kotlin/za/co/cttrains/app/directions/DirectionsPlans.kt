@@ -7,7 +7,10 @@ import java.util.UUID
 
 object DirectionsPlans {
     fun option(o: PlannerOption,train: TrainState,s: FeatureState): DirectionsPlan =
-        if(o.rail!=null) rail(o.query!!,o.rail,train.stations,o.walks,o.fetchedAt,s.access,s.destination)
+        if(o.parts.isNotEmpty()) {
+            val plans=o.parts.map { option(it,train,s) }
+            DirectionsEngine.validate(DirectionsPlan(UUID.randomUUID().toString(),"${s.access?.label ?: o.board} → ${s.destination?.label ?: o.alight}",plans.flatMapIndexed { i,p->p.steps.map { it.copy(id="$i:${it.id}") } },System.currentTimeMillis(),o.fetchedAt,o.notice))
+        } else if(o.rail!=null) rail(o.query!!,o.rail,train.stations,o.walks,o.fetchedAt,s.access,s.destination)
         else bus(o.bus!!,o.estimate.departureAt,o.walks,o.fetchedAt)
     fun selected(train: TrainState,s: FeatureState): DirectionsPlan {
         s.selectedBus?.let { return bus(it,JourneyComparison.requestedAt(train.date,it.departure.time),s.walks,it.timetable.fetchedAt) }
@@ -27,9 +30,9 @@ object DirectionsPlans {
         j.legs.forEachIndexed { i,leg ->
             val depart=if(i==0) at else at+minutesBetween(j.legs[i-1].arrival.time,leg.departure.time)*60_000L
             val platform=leg.departure.platform?.let { "Platform $it" } ?: "Platform not published; check the station display"
-            steps+=DirectionStep("board:$i",DirectionKind.BOARD,if(i==0) "Board train ${leg.train}" else "Change to train ${leg.train}","${leg.departure.name} · $platform · ${leg.line}",point(leg.departure.name),scheduledAt=depart)
+            steps+=DirectionStep("board:$i",DirectionKind.BOARD,if(i==0) "Board train ${leg.train}" else "Change to train ${leg.train}","${leg.departure.name} · $platform · ${leg.line}",point(leg.departure.name),scheduledAt=depart,service=TransportService.PRASA)
             at=depart+minutesBetween(leg.departure.time,leg.arrival.time)*60_000L
-            steps+=DirectionStep("ride:$i",DirectionKind.RIDE,"Get off at ${leg.arrival.name}","Train ${leg.train} · ${leg.departure.name} → ${leg.arrival.name}",point(leg.arrival.name),leg.stops.mapNotNull { point(it.name) },scheduledAt=at)
+            steps+=DirectionStep("ride:$i",DirectionKind.RIDE,"Get off at ${leg.arrival.name}","Train ${leg.train} · ${leg.departure.name} → ${leg.arrival.name}",point(leg.arrival.name),leg.stops.mapNotNull { point(it.name) },scheduledAt=at,service=TransportService.PRASA)
         }
         egress?.let { steps+=walk(it,"final-walk") }
         val missing=buildList { if(from!=null && access==null) add(from.label);if(to!=null && egress==null) add(to.label) }
@@ -43,8 +46,8 @@ object DirectionsPlans {
         val egress=walks.firstOrNull { it.from.id==prefix+j.alight?.id }
         val steps=buildList {
             access?.let { add(walk(it,"access")) }
-            add(DirectionStep("board",DirectionKind.BOARD,"Board ${j.timetable.service.title}","${j.departure.name} · ${j.timetable.route.title}",j.board?.point,scheduledAt=depart))
-            add(DirectionStep("ride",DirectionKind.RIDE,"Get off at ${j.arrival.name}",j.timetable.route.title,j.alight?.point,listOfNotNull(j.board?.point,j.alight?.point),scheduledAt=depart+j.minutes*60_000L))
+            add(DirectionStep("board",DirectionKind.BOARD,"Board ${j.timetable.service.title}","${j.departure.name} · ${j.timetable.route.title}",j.board?.point,scheduledAt=depart,service=j.timetable.service))
+            add(DirectionStep("ride",DirectionKind.RIDE,"Get off at ${j.arrival.name}",j.timetable.route.title,j.alight?.point,listOfNotNull(j.board?.point,j.alight?.point),scheduledAt=depart+j.minutes*60_000L,service=j.timetable.service))
             egress?.let { add(walk(it,"final-walk")) }
         }
         return DirectionsEngine.validate(DirectionsPlan(UUID.randomUUID().toString(),"${access?.from?.label ?: j.departure.name} → ${egress?.to?.label ?: j.arrival.name}",steps,System.currentTimeMillis(),checked,

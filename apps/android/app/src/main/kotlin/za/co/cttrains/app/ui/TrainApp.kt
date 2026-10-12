@@ -81,14 +81,13 @@ fun TrainApp(state: TrainState, model: TrainViewModel) {
     fun go(route: String) { navigation.navigate(route) { popUpTo(navigation.graph.startDestinationId) { saveState = true }; launchSingleTop = true; restoreState = true } }
     LaunchedEffect(state.message) { state.message?.let { snackbar.showSnackbar(it); model.dismissMessage() } }
     LaunchedEffect(feature.message) { feature.message?.let { snackbar.showSnackbar(it);features.dismissMessage() } }
-    LaunchedEffect(feature.error) { feature.error?.let { snackbar.showSnackbar(it) } }
     LaunchedEffect(state.requestedScreen) { state.requestedScreen?.let { go(it); model.navigationHandled() } }
     Scaffold(
         contentWindowInsets=if(fullMap) WindowInsets(0,0,0,0) else WindowInsets.safeDrawing,
         topBar = { if(!fullMap) Column { TopAppBar(title={ Text(stringResource(R.string.app_name),style=MaterialTheme.typography.titleLarge) },actions={ IconButton(onClick={ go("settings") },modifier=Modifier.testTag("open-settings")) { Icon(Icons.Outlined.Settings,"Settings") } },colors=TopAppBarDefaults.topAppBarColors(containerColor=MaterialTheme.colorScheme.background));DirectionsCompactBanner { go("directions") } } },
         snackbarHost = { SnackbarHost(snackbar) },
         bottomBar = { if(!fullMap) NavigationBar(containerColor=MaterialTheme.colorScheme.background,tonalElevation=0.dp) {
-            listOf(Triple("plan","Home",Icons.Outlined.Home),Triple("upcoming","Journeys",Icons.AutoMirrored.Outlined.EventNote),Triple("saved","Saved",Icons.Outlined.BookmarkBorder),Triple("alerts","Updates",Icons.Outlined.NotificationsNone)).forEach { (route,title,icon)->NavigationBarItem(selected=screen==route || route=="saved" && screen=="places",onClick={ go(route) },icon={ Icon(icon,null) },label={ Text(title) },modifier=Modifier.testTag("nav:$route")) }
+            listOf(Triple("plan","Home",Icons.Outlined.Home),Triple("upcoming","Journeys",Icons.AutoMirrored.Outlined.EventNote),Triple("saved","Saved",Icons.Outlined.BookmarkBorder),Triple("alerts","Updates",Icons.Outlined.NotificationsNone)).forEach { (route,title,icon)->NavigationBarItem(selected=screen==route || route=="saved" && screen=="places",onClick={ go(route) },icon={ Icon(icon,null) },label={ Text(title) },modifier=Modifier.testTag("nav:$route"),colors=NavigationBarItemDefaults.colors(selectedIconColor=MaterialTheme.colorScheme.primary,selectedTextColor=MaterialTheme.colorScheme.primary,indicatorColor=MaterialTheme.colorScheme.primaryContainer)) }
         } },
     ) { padding ->
         BoxWithConstraints(Modifier.fillMaxSize().padding(padding)) {

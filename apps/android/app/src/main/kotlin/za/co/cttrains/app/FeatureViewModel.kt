@@ -96,7 +96,7 @@ class FeatureViewModel(app: Application): AndroidViewModel(app) {
         lastAttempts[service]=now
         jobs[service]=viewModelScope.launch(handler) {
             mutable.update { it.copy(loading=it.loading+service,error=null) }
-            try { val result=buses.refresh(service,force);if(result.notes.isNotEmpty()) message(result.notes.joinToString(" · ")) }
+            try { val result=buses.refresh(service,force);if(result.notes.isNotEmpty()) { if(force) message(result.notes.joinToString(" · ")) else mutable.update { it.copy(error=result.notes.joinToString(" · ")) } } }
             catch(e: Exception) { if(e is CancellationException) throw e;mutable.update { it.copy(error="${service.title} could not be refreshed. ${if(store.snapshot(service)!=null) "Using the last saved data; check its dates." else "No saved data yet. Open the published source."}") } }
             finally { mutable.update { it.copy(loading=it.loading-service) } }
         }

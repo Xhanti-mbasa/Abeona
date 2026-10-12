@@ -51,3 +51,9 @@ These are planning checks, not a compliance certification. Current Play Console 
 - [ ] Deployment/rollback documented, backend release tagged and mobile contract compatibility maintained.
 
 No unchecked gate is silently treated as passed.
+
+## Implementation checkpoint
+
+The Android app is now under apps/android, pure Kotlin under packages/transit-core, Node API under services/api, JVM bus/PDF/alert extraction under workers/scrapers, shared provenance under packages/contracts, and public captured fixtures under fixtures/providers. The original Android package/database/schema and provider-specific notes/validity ranges are retained. Play and GitHub source sets are separate. Deployment, privacy worksheet and release gates are in docs/setup.md and docs/release.
+
+Multimodal comparison includes a bounded rail + MyCiTi connection search when both providers and mapped walking are explicitly enabled. It joins only complete, catchable stages through at most two mapped rail interchanges near official MyCiTi stops. Golden Arrow surveyed route codes are excluded from automatic cross-provider joins. Mixed-route fares remain per stage and mixed-route recurrence is unavailable. Real provider journeys still require deployment/live verification; the temporal join tests are not proof of field service availability.

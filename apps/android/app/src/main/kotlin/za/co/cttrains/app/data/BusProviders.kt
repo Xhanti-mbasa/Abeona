@@ -36,7 +36,7 @@ class BusRepository(context: Context) {
     }
     suspend fun timetable(service: TransportService,route: BusRouteDocument,day: String): Pair<BusTimetable,Boolean> {
         require(store.extras().beta.enabled(service))
-        try { val result=providers.getValue(service).timetable(route,day);if(!store.extras().beta.enabled(service)) throw kotlinx.coroutines.CancellationException("Operator disabled");store.saveTimetable(result);return result to false }
+        try { val result=providers.getValue(service).timetable(route,day);if(!store.extras().beta.enabled(service)) throw kotlinx.coroutines.CancellationException("Operator disabled");store.saveTimetable(result);return result to (result.provenance?.cached==true || result.provenance?.sourceAvailable==false) }
         catch(e: Exception) { if(e is kotlinx.coroutines.CancellationException) throw e
             return store.timetable(service,route.id,day)?.let { it to true } ?: throw e }
     }

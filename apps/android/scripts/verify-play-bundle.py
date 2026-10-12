@@ -3,7 +3,9 @@
 import argparse,hashlib,json,struct,subprocess,zipfile,xml.etree.ElementTree as ET
 from pathlib import Path
 p=argparse.ArgumentParser();p.add_argument('--bundle',required=True);p.add_argument('--bundletool',required=True);p.add_argument('--output',required=True);a=p.parse_args()
-bundle=Path(a.bundle);subprocess.run(['java','-jar',a.bundletool,'validate','--bundle='+str(bundle)],check=True)
+bundle=Path(a.bundle);validation=subprocess.run(['java','-jar',a.bundletool,'validate','--bundle='+str(bundle)],stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True)
+if validation.returncode: raise SystemExit(validation.stdout)
+print('Bundle validation passed')
 manifest=subprocess.check_output(['java','-jar',a.bundletool,'dump','manifest','--bundle='+str(bundle),'--module=base']).decode();root=ET.fromstring(manifest);ns='{http://schemas.android.com/apk/res/android}'
 assert root.get('package')=='za.co.cttrains.app','Package identity changed'
 assert int(root.find('uses-sdk').get(ns+'targetSdkVersion'))>=36,'Target SDK is too old'

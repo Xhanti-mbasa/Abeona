@@ -24,7 +24,8 @@ class BetaUiTest {
         app.onNodeWithContentDescription("Golden Arrow").performClick()
         app.waitUntil(15000) { !features.state.value.extras.beta.goldenArrow }
         app.onNodeWithContentDescription("Golden Arrow").assertIsOff()
-        app.onNodeWithContentDescription("MyCiTi").performScrollTo().performClick()
+        app.waitForIdle()
+        app.onNodeWithContentDescription("MyCiTi").performScrollTo().assertIsDisplayed().performClick()
         app.waitUntil(15000) { features.state.value.extras.beta.myCiti }
         app.onNodeWithContentDescription("MyCiTi").assertIsOn()
         app.onNodeWithContentDescription("Golden Arrow").assertIsOff()

@@ -21,13 +21,13 @@ import za.co.cttrains.app.data.Preferences
 private val Light=lightColorScheme(
     primary=Color(0xFF425B19),onPrimary=Color.White,primaryContainer=Color(0xFFD8ED9A),onPrimaryContainer=Color(0xFF1B290B),
     secondary=Color(0xFF52605A),secondaryContainer=Color(0xFFE4EBCF),tertiary=Color(0xFF526879),tertiaryContainer=Color(0xFFD9E7F1),
-    background=Color(0xFFF4F6F2),surface=Color(0xFFF4F6F2),surfaceContainer=Color(0xFFE9EEE6),surfaceContainerLow=Color(0xFFEEF2EA),
+    background=Color(0xFFF4F6F2),onBackground=Color(0xFF171C20),surface=Color(0xFFF4F6F2),surfaceContainer=Color(0xFFE9EEE6),surfaceContainerLow=Color(0xFFEEF2EA),
     surfaceContainerHigh=Color(0xFFE2E8DE),surfaceContainerHighest=Color(0xFFDCE3D7),onSurface=Color(0xFF171C20),onSurfaceVariant=Color(0xFF515C55),outline=Color(0xFF727E72),outlineVariant=Color(0xFFCDD5C9),
 )
 private val Dark=darkColorScheme(
     primary=Color(0xFFD8ED9A),onPrimary=Color(0xFF1B290B),primaryContainer=Color(0xFF344326),onPrimaryContainer=Color(0xFFE1F1B4),
     secondary=Color(0xFFB8CAB1),secondaryContainer=Color(0xFF323D32),tertiary=Color(0xFFB3CDDD),tertiaryContainer=Color(0xFF354A58),
-    background=Color(0xFF171C20),surface=Color(0xFF171C20),surfaceContainer=Color(0xFF232B30),surfaceContainerLow=Color(0xFF1D2429),
+    background=Color(0xFF171C20),onBackground=Color(0xFFF4F6F2),surface=Color(0xFF171C20),surfaceContainer=Color(0xFF232B30),surfaceContainerLow=Color(0xFF1D2429),
     surfaceContainerHigh=Color(0xFF2B3438),surfaceContainerHighest=Color(0xFF333E41),onSurface=Color(0xFFF4F6F2),onSurfaceVariant=Color(0xFFAFBBB5),outline=Color(0xFF84938B),outlineVariant=Color(0xFF3D484A),
 )
 private fun type(size: Int,line: Int,weight: FontWeight=FontWeight.Normal)=TextStyle(fontFamily=FontFamily.SansSerif,fontSize=size.sp,lineHeight=line.sp,fontWeight=weight,letterSpacing=0.sp)

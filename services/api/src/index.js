@@ -82,17 +82,17 @@ return app;
 }
 
 // ── Start ───────────────────────────────────────────────────────────────────
-async function start() {
+async function start({port=Number(process.env.PORT || 3000),host="0.0.0.0",handleSignals=true}={}) {
   // Initialise Redis (no-op if REDIS_URL is not set)
   await cache.initRedis();
 
   const app=createApp();
-  const server=app.listen(PORT, () => {
-    console.log(`Abeona API running on http://localhost:${PORT}`);
+  const server=app.listen(port,host, () => {
+    console.log(`Abeona API running on http://localhost:${server.address().port}`);
     console.log('Disclaimer: Unofficial — not affiliated with Metrorail/PRASA');
   });
   const stop=()=>server.close(()=>{cache.close();process.exit(0);});
-  process.once('SIGTERM',stop);process.once('SIGINT',stop);
+  if(handleSignals) { process.once('SIGTERM',stop);process.once('SIGINT',stop); }
   return server;
 }
 

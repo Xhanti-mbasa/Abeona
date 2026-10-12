@@ -69,7 +69,7 @@ class DirectionsUpdatesUiTest {
         app.onNodeWithText("Resume GPS").performScrollTo().performClick()
         app.waitUntil(15000) { DirectionsRuntime.state.value.session?.paused==false }
         app.onNodeWithTag("directions-stop").performScrollTo().performClick()
-        app.onNodeWithText("Stop journey").performClick()
+        app.onNodeWithTag("confirm-stop-journey").performClick()
         app.waitUntil(15000) { !DirectionsRuntime.state.value.running && DirectionsRuntime.state.value.session==null }
         app.waitUntil(15000) { app.activity.getSystemService(NotificationManager::class.java).activeNotifications.none { it.id==DirectionsNotifications.ID } }
     }
