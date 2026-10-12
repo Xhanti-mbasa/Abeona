@@ -242,7 +242,7 @@ import za.co.cttrains.core.*
                 issue?.let { Text(it,style=MaterialTheme.typography.bodySmall) }
             }
             items(suggestions,key={ "place:${it.id}" }) { p -> ListItem(headlineContent={ Text(p.label) },supportingContent={ Text("Online place") },modifier=Modifier.clickable { onSelect(WalkEndpoint("place:${p.id}",p.label.take(100),p.point)) }) }
-            items(local,key={ it.id }) { p -> ListItem(headlineContent={ Text(p.label) },supportingContent={ Text(if(p.id.startsWith("spot:")) "Saved place" else if(p.id.startsWith("station:")) "Train station" else "Bus stop") },modifier=Modifier.clickable { onSelect(p) }) }
+            items(local,key={ it.id }) { p -> ListItem(headlineContent={ Text(p.label) },supportingContent={ Text(if(p.id.startsWith("spot:")) "Saved place" else if(p.id.startsWith("station:")) "Train station" else "Bus stop") },modifier=Modifier.testTag("place-choice:${p.id}").clickable { onSelect(p) }) }
         }
     }
 }

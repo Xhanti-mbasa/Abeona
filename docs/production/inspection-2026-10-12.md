@@ -21,15 +21,17 @@ The original source repository and its open PRs remain unchanged. Development si
 | Current Android build | Original CI run 37984686808 failed in both build and device jobs | Confirmed original failure |
 | Journey-sharing compilation | Nullable Double durations used integer Elvis defaults; Kotlin could not resolve multiplication on lines 11 and 14 | Fixed to Double defaults and multipliers; regression test added |
 | Abeona identity | Launcher label, app header and settings footer use Abeona; application ID retained | Implemented in this stage |
-| AI credit | Settings footer says exactly “Predominantly built with AI”; repository README carries the credit | Implemented in this stage |
+| AI credit | Repository README says exactly “Predominantly built with AI” for other developers; no AI-build label in the Android app | Implemented in this stage |
 | Target API | Original targetSdk 35, compileSdk 36 | Target set to 36; Android 16 behaviour still needs verification |
 | Redis credentials | Successful connection logged the complete REDIS_URL | Removed URL from that log |
 | Publishing | Original CI automatically published GitHub releases on main/tags | Release publication now requires an explicit manual dispatch flag |
 | Backend critical contract suite | `npm run test:mobile` | 11 passing tests locally |
+| Pure Kotlin core | Same source/tests/fixtures, Kotlin 2.1.20, JDK 17, isolated JVM harness | 145 passing tests, 17 suites, zero skipped/failures |
+| Current Android CI | Run 38251841919 compiled both app variants; lint found notification permission handling errors; 24 of 25 device tests passed, with ambiguous Salt River selection in the saved-place test | Permission-revocation handling and a stable station-result selector added; rerun required |
 | Saved Home duplicates | Current source already contains `SavedAddresses.upsert` and identity/photo/station preservation tests | Present in source; full device rerun still required |
 | Android runtime and signing | No configured Android SDK, emulator or production signing key in this environment | Unverified; CI and signed device tests required |
 
-The current core and Android CI results must be inspected on the draft PR. Historical test counts are not treated as verification of this revision. No verified Abeona APK or Android App Bundle is delivered at this stage.
+The 145 core tests are current local results, not historical counts, and do not replace a full Android app build. The Android CI rerun must be inspected on the draft PR. No verified release Android App Bundle is delivered at this stage.
 
 ## Technology stack
 

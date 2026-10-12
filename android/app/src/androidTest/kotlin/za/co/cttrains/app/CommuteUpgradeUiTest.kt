@@ -30,7 +30,7 @@ class CommuteUpgradeUiTest {
         app.onNodeWithText("Home, Work & School · manage addresses").performScrollTo().performClick()
         app.onNodeWithTag("edit-address:Home").performScrollTo().performClick()
         app.onNodeWithText("Search places, stations or stops").performTextInput("Salt River")
-        app.onNode(hasText("Salt River") and hasClickAction()).performClick()
+        app.onNodeWithTag("place-choice:station:saltriver").performScrollTo().performClick()
         app.onNodeWithText("Confirm Home address").assertIsDisplayed()
         app.onNodeWithText("Save address").performClick()
         app.waitUntil(15000) { features.state.value.extras.spots.single().note=="Salt River" }

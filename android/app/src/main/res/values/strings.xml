@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Abeona</string>
-    <string name="ai_build_credit">Predominantly built with AI</string>
 </resources>
