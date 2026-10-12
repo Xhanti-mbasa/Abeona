@@ -21,6 +21,7 @@ import za.co.cttrains.app.ui.BusBrowser
 import za.co.cttrains.core.*
 import za.co.cttrains.app.data.LocalExtras
 
+/** Standalone fixtures use Compose's debug-only host; release tests exercise MainActivity. */
 class TransitLayoutTest {
     @get:Rule val app=createComposeRule()
     private val route=BusRouteDocument("test-route","Airport Industria","https://www.gabs.co.za/Pdf/Apdf/sample.pdf","2026-09-28","2026-10-04",true)

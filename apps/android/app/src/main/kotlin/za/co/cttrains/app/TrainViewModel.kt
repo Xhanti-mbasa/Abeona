@@ -136,6 +136,7 @@ class TrainViewModel(application: Application) : AndroidViewModel(application) {
         mutableState.update { it.copy(from=query.from,to=query.to,date=query.date,time=query.time,
             result=SearchResult(CachedSearch(query,listOf(journey),checked,fares,sourceId),cached),selectedJourney=journey,
             requestedScreen=if(openMap) "map" else it.requestedScreen,loading=false,error=null) }
+        viewModelScope.launch(storageErrors) { repository.updatePreferences { it.copy(lastQuery = query) } }
     }
 
     fun refreshHome() {

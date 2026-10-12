@@ -83,6 +83,19 @@ class AbeonaJourneyUiTest {
         runBlocking { val reopened=FeatureStore(app.activity).extras().spots.first { it.name=="Evening class" };assertEquals(saved.id,reopened.id);assertEquals(saved.point,reopened.point) }
         runBlocking { features.store.update { it.copy(spots=it.spots.filterNot { p->p.id==saved.id }) } }
     }
+    @Test fun chosenTrainRoutePreservesQueryAndRestoresStationsAfterRestart() {
+        val html=InstrumentationRegistry.getInstrumentation().context.assets.open("transfer.html").bufferedReader().use { it.readText() }
+        val query=SearchQuery("Unibell","Salt River",java.time.LocalDate.now(CapeTownZone).plusDays(1).toString(),"07:00")
+        val journey=CtTrainsParser.journeys(html,"07:00").first()
+        app.runOnUiThread { train.presentPlannedJourney(query,journey,System.currentTimeMillis(),true,null,"cttrains-web",false) }
+        app.waitUntil(15000) { train.state.value.preferences.lastQuery==query }
+        assertEquals(query,train.state.value.query)
+        app.activityRule.scenario.recreate()
+        val reopened=ViewModelProvider(app.activity)[TrainViewModel::class.java]
+        app.waitUntil(15000) { reopened.state.value.from==query.from && reopened.state.value.to==query.to && reopened.state.value.time==query.time }
+        assertEquals(java.time.LocalDate.now(CapeTownZone).toString(),reopened.state.value.date)
+        assertEquals(query,runBlocking { TrainRepository(app.activity).store.preferences.first().lastQuery })
+    }
     @Test fun brokenBuildSourcePreferenceRecoversWithoutLosingStationsOrTheme() {
         runBlocking { train.repository.updatePreferences { it.copy(sourceId="cttrains-api",theme="Dark",favoriteStations=listOf("Unibell")) } }
         app.waitUntil(15000) { train.state.value.preferences.run { sourceId=="cttrains-web" && theme=="Dark" && favoriteStations==listOf("Unibell") } }

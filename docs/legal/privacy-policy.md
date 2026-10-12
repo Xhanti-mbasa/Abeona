@@ -15,7 +15,7 @@ Your last twelve timetable searches can be retained locally for up to fourteen d
 
 ## Network requests
 
-New transit searches send the chosen stations, travel date and departure time to the configured Abeona backend. The backend fetches public CT Trains community rail information, MyCiTi published bus information, Golden Arrow published timetables/fares and Western Cape surveyed map data. The operators receive requests from the backend. The API and its hosting/reverse proxy receive your IP address and request metadata. The final operator must publish its verified hosting providers, access-log policy and retention periods before release.
+Train searches send the chosen stations, travel date and departure time to the public CT Trains community website, which also receives the phone’s IP address and request metadata. When a configured Abeona backend is selected, those requests go to that backend, with a direct CT Trains fallback if it fails. Fresh MyCiTi and Golden Arrow searches use the configured backend and its workers for published bus information, timetables/fares and Western Cape surveyed map data. The API and its hosting/reverse proxy receive your IP address and request metadata. The final publisher must disclose the verified hosting providers, access-log policy and retention periods before release.
 
 Online maps request the viewed geographic area and tiles from OpenFreeMap or the selected City of Cape Town imagery source. Those services receive the request and IP address. Offline or station-only map mode stops online tile requests. Downloading an offline area requires network requests for that area.
 
