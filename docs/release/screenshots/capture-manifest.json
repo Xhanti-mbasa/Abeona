@@ -2,61 +2,79 @@
   {
     "file": "01-home-dark.png",
     "originalCapture": "abeona-home-dark.png",
-    "sourceCommit": "34f001184ab316c5a3530d23320814e9ee8d7f3f",
-    "workflow": 38285978588,
+    "sourceCommit": "f1e8359deec49964e3f3dd2179872ed1fe4bfce8",
+    "workflow": 38291485295,
+    "device": "github-36",
     "size": [
       1080,
       1920
     ],
-    "sha256": "9070e21701a4b0b48619e0709142d2520b38ffc881b742ce6b4e9c8f62ef185f",
+    "sha256": "26ef83c981d94989cb786cee34fb61085606c40ce687c066723b19cf689e1f39",
     "state": "native app with controlled fixture data; no live vehicle claim"
   },
   {
     "file": "02-home-light.png",
     "originalCapture": "abeona-home-light.png",
-    "sourceCommit": "34f001184ab316c5a3530d23320814e9ee8d7f3f",
-    "workflow": 38285978588,
+    "sourceCommit": "f1e8359deec49964e3f3dd2179872ed1fe4bfce8",
+    "workflow": 38291485295,
+    "device": "github-36",
     "size": [
       1080,
       1920
     ],
-    "sha256": "c3837ccb263d437e60938b8d7bb658d9bf7a8a208e501d0a59a1014e863967aa",
+    "sha256": "dc532eb1408ddee09bd4f11c1c8e3051303e4cecf49a5ed115b7ee97b13d6ead",
     "state": "native app with controlled fixture data; no live vehicle claim"
   },
   {
     "file": "03-route-results.png",
     "originalCapture": "abeona-results-dark.png",
-    "sourceCommit": "34f001184ab316c5a3530d23320814e9ee8d7f3f",
-    "workflow": 38285978588,
+    "sourceCommit": "f1e8359deec49964e3f3dd2179872ed1fe4bfce8",
+    "workflow": 38291485295,
+    "device": "github-36",
     "size": [
       1080,
       1920
     ],
-    "sha256": "27a9acc2fdc577b285546813e2c1b6808eb920828ae4828ca658ead89db268b0",
+    "sha256": "d3ff4cbd9f0e9b185d96ee18581bcd48508ef4f4dddb3233b717d68ab4b2e587",
     "state": "native app with controlled fixture data; no live vehicle claim"
   },
   {
     "file": "04-active-journey.png",
     "originalCapture": "abeona-active-dark.png",
-    "sourceCommit": "34f001184ab316c5a3530d23320814e9ee8d7f3f",
-    "workflow": 38285978588,
+    "sourceCommit": "f1e8359deec49964e3f3dd2179872ed1fe4bfce8",
+    "workflow": 38291485295,
+    "device": "github-36",
     "size": [
       1080,
       1920
     ],
-    "sha256": "52cde9e60541c3ac8efc9117c59a62d495384ca8d34473bd5935ce67bb87bddb",
+    "sha256": "8655bd0c484ca0c8b985a537add80c152d3ca9c972198593e40cfe8065b59589",
+    "state": "native app with controlled fixture data; no live vehicle claim"
+  },
+  {
+    "file": "05-saved-places.png",
+    "originalCapture": "abeona-saved-places.png",
+    "sourceCommit": "f1e8359deec49964e3f3dd2179872ed1fe4bfce8",
+    "workflow": 38291485295,
+    "device": "play-35",
+    "size": [
+      1080,
+      1920
+    ],
+    "sha256": "8ab41286291cc31b4b11bb086e4864c944dbbaed0c671b42861645f879e2c032",
     "state": "native app with controlled fixture data; no live vehicle claim"
   },
   {
     "file": "06-recurring-journeys.png",
     "originalCapture": "recurring-journeys.png",
-    "sourceCommit": "34f001184ab316c5a3530d23320814e9ee8d7f3f",
-    "workflow": 38285978588,
+    "sourceCommit": "f1e8359deec49964e3f3dd2179872ed1fe4bfce8",
+    "workflow": 38291485295,
+    "device": "github-36",
     "size": [
       1080,
       1920
     ],
-    "sha256": "c8ec920d20a87ad3662b5f19b62e29a2d58570e2678e8e2713fa2e82e4402eab",
+    "sha256": "265ab0f617ecb743ee4f15f317bea4174ffc8334fc9280b882c503b7c0297e23",
     "state": "native app with controlled fixture data; no live vehicle claim"
   }
 ]

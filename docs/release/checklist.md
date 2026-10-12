@@ -8,11 +8,11 @@ Status: **not Google Play ready**. Fill evidence and dates for the exact source 
 - [x] Approve visual direction and implement native design tokens/navigation.
 - [x] Move operator extraction and PDF execution to the backend monorepo.
 - [x] Separate Play updates from GitHub installer source/permission.
-- [x] Add contract/outage/cache/retry checks; local Node suite passed 19 tests.
-- [ ] Current commit passes Android compile, all critical device journeys and both distribution checks.
-- [ ] Compare actual Home/results/active captures against the approved design and resolve actionable issues.
-- [ ] Verify actual release AAB, permission inventory, installer exclusion, signature and SHA-256.
-- [ ] Verify 64-bit ELF and APK alignment, then launch on a 16 KB device/emulator.
+- [x] Add contract/outage/cache/retry checks; Node suite passed 29 tests.
+- [x] Engineering source f1e8359 passes Android builds/lint and 27 critical device tests on GitHub API 36, Play API 35, and Play API 36/16 KB.
+- [x] Compare actual Home/results/active captures against the approved design; scoped native QA passed.
+- [x] Verify local candidate AAB/APK identities, permissions, installer exclusion, signatures, 16 KB packaging and SHA-256; exact evidence in verification.md.
+- [x] Verify all six 64-bit native ELF load alignments, 16 KB bundle configuration and APK ZIP alignment; strict Play API 36/16 KB runtime suite passed.
 - [ ] Verify release-signed in-place upgrade over a real existing installation and preserved data.
 - [ ] Exercise slow/offline networks, permission denial/revocation, reminders, rotation/font scaling and process restart.
 - [ ] Exercise live sharing expiry/stop and Android notification fallback on actual devices; Samsung Now Bar eligibility is firmware-controlled.
@@ -21,7 +21,7 @@ Status: **not Google Play ready**. Fill evidence and dates for the exact source 
 
 - [ ] Provision an owned HTTPS backend; build its real URL into the candidate.
 - [ ] Verify PRASA/CT Trains, MyCiTi and Golden Arrow access, parser behavior, source age and terms/licences.
-- [ ] Verify worker warm-up, retained snapshots, bounded fetches, cache failure and API-to-worker health in deployment.
+- [x] Verify worker warm-up, retained snapshots, bounded fetches and outage/cache contracts locally; container API-to-worker health passed. Production deployment acceptance remains required.
 - [ ] Verify logs/retention, gateway rate limits, TLS, secrets, immutable image deploy and rollback.
 - [ ] Verify real routes at supported transfers. Unsupported or unconfirmed links must remain unavailable.
 - [ ] Verify optional Matrix, Google profile, Photon/walking, map and WhatsApp configurations, or leave unverified optional integrations disabled.
@@ -42,8 +42,8 @@ Outstanding Console gates:
 - [ ] Public final privacy policy with verified contact, processors and retention; accurate Data Safety form.
 - [ ] Permission explanations/foreground-service declarations and any Health Connect declaration required by the final artifact.
 - [ ] App access instructions for optional account features, content rating, target audience, countries and developer contact.
-- [ ] Accurate store copy, final brand assets and actual app screenshots.
+- [x] Prepare accurate store-copy draft, editable brand assets and six actual candidate screenshots. Final publisher/production listing review remains required.
 - [ ] Internal testing install/update, pre-launch report, crash/ANR review and any account-specific closed-testing requirement shown in Console.
 - [ ] Release review, phased rollout monitoring and a higher-version rollback plan.
 
-A build produced without the production backend or upload-signing configuration is a development candidate. The existing CI signing fingerprint does not establish a match with the user's prior installation or a Play signing key.
+A build produced without the production backend or upload-signing configuration is a development candidate. The compatible local development candidate uses the certificate from the provided 1.9.0 APK. Its package, Keystore alias and database filename also match. This does not establish a Play upload key or replace an actual in-place device test.

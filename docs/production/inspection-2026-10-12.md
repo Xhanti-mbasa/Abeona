@@ -1,5 +1,7 @@
 # Abeona: inspection and stabilisation
 
+Historical stage-one report. Current implementation, test evidence and remaining gates are in [acceptance-and-blockers.md](acceptance-and-blockers.md) and [the release checklist](../release/checklist.md). The dated baseline counts/environment below are retained as inspection provenance.
+
 Date: 12 October 2026. Stage: inspect and stabilise, then select a visual direction.
 
 **Abeona is not yet ready for Google Play submission.** This is an imported source baseline plus a small stabilisation pass, not the completed redesign or final monorepo structure.

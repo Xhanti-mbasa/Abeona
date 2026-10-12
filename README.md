@@ -4,7 +4,7 @@ A native Android journey planner for Cape Town, formerly CT Trains. This reposit
 
 The redesign uses graphite and pale citron with coherent light/dark themes, four main tabs, optional station suggestions, saved places, recurring journeys and local active directions. Transport data is explicitly scheduled or cached; no integrated source provides verified vehicle tracking.
 
-Start with [setup and operations](docs/setup.md), [integration inventory](docs/production/provider-inventory.md), [design system](docs/design/design-system.md), [inspection](docs/production/inspection-2026-10-12.md) and the [release checklist](docs/release/checklist.md).
+Start with [setup and operations](docs/setup.md), [integration inventory](docs/production/provider-inventory.md), [design system](docs/design/design-system.md), [acceptance and blockers](docs/production/acceptance-and-blockers.md), [native design QA](design-qa.md), [verification record](docs/release/verification.md) and the [release checklist](docs/release/checklist.md).
 
 | Component | Path |
 | --- | --- |

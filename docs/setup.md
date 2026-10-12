@@ -14,6 +14,13 @@
 | infra | Docker images and private worker/Redis deployment configuration |
 | docs | Design, sources, setup, inspection, privacy and release evidence |
 
+The implementation is currently on review branch `codex/abeona-stabilisation` ([PR 1](https://github.com/Xhanti-mbasa/Abeona/pull/1)). During review, clone that branch explicitly:
+
+```sh
+git clone --branch codex/abeona-stabilisation https://github.com/Xhanti-mbasa/Abeona.git
+cd Abeona
+```
+
 ## Local API
 
 Use Node 22, JDK 17, Android Studio/SDK 36, and the checked-in Gradle 8.11.1 wrapper. Android builds use Kotlin 2.1.20 and AGP 8.9.2.
