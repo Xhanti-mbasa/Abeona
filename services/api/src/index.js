@@ -1,7 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const cron = require('node-cron');
+const {providers,health}=require('@abeona/provider-connectors');
 
 const linesRouter     = require('./routes/lines');
 const stationsRouter  = require('./routes/stations');
@@ -11,19 +11,21 @@ const { errorHandler, notFound, rateLimiter } = require('./middleware');
 const { scrapeServiceUpdates } = require('./scrapers/cttrains');
 const cache = require('./utils/cache');
 
+function createApp() {
 const app = express();
 const PORT = process.env.PORT || 3000;
 const startedAt = new Date().toISOString();
 
 // ── Middleware ──────────────────────────────────────────────────────────────
 app.use(cors());
-app.use(express.json());
+app.disable('x-powered-by');
+app.use(express.json({limit:'64kb'}));
 app.use(rateLimiter);
 
 // ── Root ────────────────────────────────────────────────────────────────────
 app.get('/', (req, res) => {
   res.json({
-    name: 'CTTrains API',
+    name: 'Abeona API',
     description: 'Unofficial REST API for Cape Town Metrorail timetables and service updates.',
     version: '1.0.0',
     disclaimer: 'This API is not affiliated with Metrorail or PRASA. Data sourced from cttrains.co.za — a free community service.',
@@ -50,6 +52,7 @@ app.get('/health', async (req, res) => {
 
   res.json({
     status: 'ok',
+    providers: Object.values(providers).map(p=>({id:p.id,...health.get(p.id)})),
     uptime_seconds: Math.floor(process.uptime()),
     timestamp: new Date().toISOString(),
     started_at: startedAt,
@@ -69,39 +72,33 @@ app.use('/stations',  stationsRouter);
 app.use('/schedules', schedulesRouter);
 app.use('/updates',   updatesRouter);
 app.use('/mobile/v1', require('./routes/mobile'));
+app.use('/mobile/v1', require('./routes/providers').createProviderRouter());
 
 // ── 404 / Error ─────────────────────────────────────────────────────────────
 app.use(notFound);
 app.use(errorHandler);
 
-// ── Background jobs ─────────────────────────────────────────────────────────
-// Poll for service updates every 5 minutes during operating hours (05:00–23:00 SAST)
-cron.schedule('*/5 5-23 * * 1-6', async () => {
-  try {
-    const updates = await scrapeServiceUpdates();
-    await cache.set('service_updates', updates, 5 * 60);
-    if (updates.length > 0) {
-      console.log(`[cron] Refreshed ${updates.length} service update(s)`);
-    }
-  } catch (err) {
-    console.warn('[cron] Failed to refresh service updates:', err.message);
-  }
-}, { timezone: 'Africa/Johannesburg' });
+return app;
+}
 
 // ── Start ───────────────────────────────────────────────────────────────────
 async function start() {
   // Initialise Redis (no-op if REDIS_URL is not set)
   await cache.initRedis();
 
-  app.listen(PORT, () => {
-    console.log(`CTTrains API running on http://localhost:${PORT}`);
+  const app=createApp();
+  const server=app.listen(PORT, () => {
+    console.log(`Abeona API running on http://localhost:${PORT}`);
     console.log('Disclaimer: Unofficial — not affiliated with Metrorail/PRASA');
   });
+  const stop=()=>server.close(()=>{cache.close();process.exit(0);});
+  process.once('SIGTERM',stop);process.once('SIGINT',stop);
+  return server;
 }
 
-start().catch((err) => {
+if(require.main===module) start().catch((err) => {
   console.error('Failed to start server:', err);
   process.exit(1);
 });
 
-module.exports = app;
+module.exports = {createApp,start};

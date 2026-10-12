@@ -39,10 +39,7 @@ class TrainRepository(private val context: Context) {
     private val json = Json { ignoreUnknownKeys = true }
     private val client = OkHttpClient.Builder().connectTimeout(15, TimeUnit.SECONDS)
         .readTimeout(20, TimeUnit.SECONDS).callTimeout(25, TimeUnit.SECONDS).build()
-    val sources = buildList {
-        add(TransitSource("cttrains-web", "CT Trains", "Direct community timetable"))
-        if (BuildConfig.TRANSIT_BASE_URL.isNotBlank()) add(TransitSource("cttrains-api", "Transit API", "CT Trains through your configured server"))
-    }
+    val sources=listOf(TransitSource("cttrains-api","Abeona backend","Scheduled transit data through the configured server"),TransitSource("cttrains-web","Saved legacy searches","Previously saved CT Trains data; refreshes use the backend"))
     val preferences = flow { store.initialize(); emitAll(store.preferences) }
     suspend fun updatePreferences(transform: (Preferences) -> Preferences) = store.updatePreferences(transform)
     suspend fun bundledCatalog(): StationCatalog = withContext(Dispatchers.IO) {
@@ -50,9 +47,8 @@ class TrainRepository(private val context: Context) {
     }
     suspend fun storedCatalog(): StationCatalog? = store.catalog()
     suspend fun refreshCatalog(sourceId: String = "cttrains-web"): StationCatalog {
-        val catalog = if (sourceId == "cttrains-api" && BuildConfig.TRANSIT_BASE_URL.isNotBlank()) {
-            json.decodeFromString<StationCatalog>(get("${BuildConfig.TRANSIT_BASE_URL}/mobile/v1/catalog"))
-        } else withContext(Dispatchers.Default) { CtTrainsParser.catalog(get("https://cttrains.co.za/train-form.php")) }
+        require(BuildConfig.TRANSIT_BASE_URL.isNotBlank()) { "Configure the Abeona backend to refresh stations." }
+        val catalog=json.decodeFromString<StationCatalog>(get("${BuildConfig.TRANSIT_BASE_URL}/mobile/v1/catalog"))
         require(catalog.stations.size >= 2) { "Transit source returned an empty station list." }
         store.saveCatalog(catalog)
         return catalog
@@ -63,26 +59,21 @@ class TrainRepository(private val context: Context) {
     suspend fun search(query: SearchQuery, sourceId: String): SearchResult {
         require(sources.any { it.id == sourceId }) { "This transit source is unavailable." }
         try {
-            val entry = if (sourceId == "cttrains-api") {
-                val url = "${BuildConfig.TRANSIT_BASE_URL}/mobile/v1/journeys".toHttpUrl().newBuilder()
-                    .addQueryParameter("from", query.from).addQueryParameter("to", query.to)
-                    .addQueryParameter("date", query.date).addQueryParameter("time", query.time).build().toString()
-                validateTransitEntry(json.decodeFromString<CachedSearch>(get(url)), query, sourceId, System.currentTimeMillis())
-            } else {
-                val html = get(websiteUrl(query))
-                withContext(Dispatchers.Default) { CachedSearch(query, CtTrainsParser.journeys(html, query.time), System.currentTimeMillis(), CtTrainsParser.fares(html), sourceId) }
-            }
+            require(BuildConfig.TRANSIT_BASE_URL.isNotBlank()) { "The transit backend is not configured. Saved journeys remain available." }
+            val url="${BuildConfig.TRANSIT_BASE_URL}/mobile/v1/journeys".toHttpUrl().newBuilder().addQueryParameter("from",query.from).addQueryParameter("to",query.to).addQueryParameter("date",query.date).addQueryParameter("time",query.time).build().toString()
+            val entry=validateTransitEntry(json.decodeFromString<CachedSearch>(get(url)),query,"cttrains-api",System.currentTimeMillis())
             store.cache(entry)
             return SearchResult(entry, false)
         } catch (error: Exception) {
             if (error is kotlinx.coroutines.CancellationException) throw error
-            return store.cached(query, sourceId)?.let { SearchResult(it, true) } ?: throw error
+            return (store.cached(query,sourceId) ?: store.cached(query,"cttrains-api") ?: store.cached(query,"cttrains-web"))?.let { SearchResult(it,true) } ?: throw error
         }
     }
     suspend fun clearCache() = store.clearCache()
     suspend fun savedAlerts(): AlertSnapshot? = store.alerts()
     suspend fun refreshAlerts(): AlertSnapshot {
-        val snapshot = withContext(Dispatchers.Default) { ServiceAlerts.parse(get(ServiceAlerts.URL), System.currentTimeMillis()) }
+        require(BuildConfig.TRANSIT_BASE_URL.isNotBlank()) { "The updates backend is not configured." }
+        val snapshot=json.decodeFromString<AlertSnapshot>(get("${BuildConfig.TRANSIT_BASE_URL}/mobile/v1/alerts"))
         store.saveAlerts(snapshot)
         return snapshot
     }

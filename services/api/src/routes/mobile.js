@@ -4,13 +4,8 @@ const axios = require('axios');
 const cache = require('../utils/cache');
 const { parseCatalog, parseJourneys, parseFares, validateQuery } = require('../transit/mobile-parser');
 
-async function page(url) {
-  const response = await axios.get(url, { timeout: 20000, maxContentLength: 2000000, headers: {
-    'User-Agent': 'CTTrains-API/1.1 (https://github.com/Xhanti-mbasa/cttrains-api; unofficial community tool)',
-    Accept: 'text/html',
-  } });
-  return response.data;
-}
+const {readPage: page}=require('@abeona/provider-connectors');
+const {provenance}=require('@abeona/contracts');
 function createMobileRouter({ readPage = page, cacheStore = cache, currentDate = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Johannesburg', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date()) } = {}) {
 const router = express.Router();
 async function catalog() {
@@ -32,14 +27,14 @@ router.get('/journeys', async (req, res) => {
     if (error) return res.status(400).json({ error });
     const key = `mobile:v1:${JSON.stringify(query)}`;
     const existing = await cacheStore.get(key);
-    if (existing) return res.json(existing);
+    if (existing) return res.json({...existing,provenance:provenance('PRASA',existing.fetchedAt,true)});
     const [year, month, day] = query.date.split('-');
     const url = new URL('https://cttrains.co.za/train-schedule.php');
     url.search = new URLSearchParams({ fromStation: query.from, toStation: query.to, travelDate: `${day}/${month}/${year}`, departureTime: query.time });
     const html = await readPage(url.toString());
     const result = { query, journeys: parseJourneys(html, query.time), fetchedAt: Date.now(), fares: parseFares(html), sourceId: 'cttrains-api' };
     await cacheStore.set(key, result, 60 * 60);
-    res.json(result);
+    res.json({...result,provenance:provenance('PRASA',result.fetchedAt)});
   } catch (_error) { res.status(502).json({ error: 'The CT Trains timetable could not be normalized safely. Try the source website.' }); }
 });
 return router;

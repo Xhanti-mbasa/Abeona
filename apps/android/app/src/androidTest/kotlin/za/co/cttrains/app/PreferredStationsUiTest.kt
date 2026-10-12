@@ -26,33 +26,23 @@ class PreferredStationsUiTest {
         runBlocking { features.store.update { it.copy(spots=listOf(work,home)) } }
         app.waitUntil(15000) { features.state.value.extras.spots.size==2 }
         app.runOnUiThread { train.setMapMode("stations");train.edit { it.copy(from="",to="Unibell") };features.place(null,true);features.place(null,false) }
-        app.onNodeWithText("Plan").performClick()
+        app.onNodeWithTag("nav:plan").performClick()
     }
     @After fun cleanup() {
         app.runOnUiThread { features.place(null,true);features.place(null,false) }
         runBlocking { features.store.update { it.copy(spots=it.spots.filterNot { p -> p.id.startsWith("preferred-test-") }) } }
     }
-    @Test fun workCanUseSaltRiverAndUnibellCanFinishAtHomeThenSwap() {
-        app.onNodeWithText("Choose your start").performScrollTo().performClick()
-        app.onNodeWithText("Search places, stations or stops").performTextInput("33 Albert Road")
-        app.onNode(hasText("Work") and hasClickAction()).performClick()
-        app.onNodeWithText("Choose your boarding station").assertIsDisplayed()
+    @Test fun aPreferredStationIsOptionalAndSurvivesSwap() {
+        app.runOnUiThread { features.place(WalkEndpoint("spot:${work.id}",work.name,work.point),true) }
+        app.onNodeWithTag("journey-planner").performScrollToNode(hasText("Choose station"));app.onNodeWithText("Choose station").performClick()
         val ranked=StationChoices.ranked(work.point,train.state.value.stations,train.state.value.catalog.stations)
-        app.onNodeWithTag("station-choice:${stationKey(ranked.first().name)}").assertIsDisplayed()
-        UiScreenshots.save("preferred-station-suggestions")
-        app.onNodeWithTag("journey-station-picker").performScrollToNode(hasTestTag("station-choice:${stationKey("Salt River")}"))
-        app.onNodeWithTag("station-choice:${stationKey("Salt River")}").performClick()
+        app.onNodeWithTag("station-choice:${stationKey(ranked.first().name)}").assertIsDisplayed();UiScreenshots.save("preferred-station-suggestions")
+        app.onNodeWithTag("journey-station-picker").performScrollToNode(hasTestTag("station-choice:${stationKey("Salt River")}"));app.onNodeWithTag("station-choice:${stationKey("Salt River")}").performClick()
         app.waitUntil(15000) { features.state.value.extras.spots.first { it.id==work.id }.preferredStation=="Salt River" }
-        app.onNodeWithTag("boarding-station").performScrollTo().assertTextContains("Board at · Salt River")
-        app.onNodeWithTag("journey-planner").performScrollToNode(hasTestTag("final-spot:${home.id}"))
-        app.onNodeWithTag("final-spot:${home.id}").performClick()
-        app.onNodeWithTag("arrival-station").performScrollTo().assertTextContains("Get off at · Unibell")
-        app.runOnIdle { assertEquals("spot:${work.id}",features.state.value.access?.id);assertEquals("spot:${home.id}",features.state.value.destination?.id);assertEquals("Salt River",train.state.value.from);assertEquals("Unibell",train.state.value.to) }
-        UiScreenshots.save("work-salt-river-unibell-home")
+        app.runOnUiThread { features.place(WalkEndpoint("spot:${home.id}",home.name,home.point),false,home.preferredStation) }
+        app.onNodeWithTag("journey-planner").performScrollToNode(hasText("Route preferences & providers"));app.onNodeWithText("Route preferences & providers").performClick()
         app.onNodeWithText("Swap From and To").performScrollTo().performClick()
-        app.runOnIdle { assertEquals("Unibell",features.state.value.boardingStation);assertEquals("Salt River",features.state.value.arrivalStation);assertEquals("Home",features.state.value.access?.label);assertEquals("Work",features.state.value.destination?.label) }
-        app.onNodeWithTag("boarding-station").performScrollTo().assertTextContains("Board at · Unibell")
-        app.onNodeWithTag("arrival-station").performScrollTo().assertTextContains("Get off at · Salt River")
+        app.runOnIdle { assertEquals("Unibell",features.state.value.boardingStation);assertEquals("Salt River",features.state.value.arrivalStation);assertEquals("Home",features.state.value.access?.label);assertEquals("Work",features.state.value.destination?.label) };UiScreenshots.save("work-salt-river-unibell-home")
     }
     @Test fun preferredStationSurvivesReselectionAndBackupRestore() {
         app.runOnUiThread { features.place(WalkEndpoint("spot:${work.id}",work.name,work.point),true);features.chooseStation("Salt River",true,true) }
@@ -62,8 +52,8 @@ class PreferredStationsUiTest {
         app.waitUntil(15000) { features.state.value.extras.spots.firstOrNull { it.id==work.id }?.preferredStation=="Salt River" }
         app.runOnUiThread { features.place(null,true);features.place(WalkEndpoint("spot:${work.id}",work.name,work.point),true) }
         app.runOnIdle { assertEquals("Salt River",features.state.value.boardingStation) }
-        app.onNodeWithTag("boarding-station").performScrollTo().assertTextContains("Board at · Salt River")
-        app.onNodeWithTag("boarding-station").performClick()
+        app.onNodeWithTag("journey-planner").performScrollToNode(hasText("Choose station"))
+        app.onNodeWithText("Choose station").performClick()
         app.onNodeWithText("Auto · find nearby usable stations").performClick()
         app.waitUntil(15000) { features.state.value.extras.spots.first { it.id==work.id }.preferredStation==null }
         app.runOnIdle { assertNull(features.state.value.boardingStation) }

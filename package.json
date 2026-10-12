@@ -10,7 +10,7 @@
   "scripts": {
     "start": "npm run start -w @abeona/api",
     "dev": "npm run dev -w @abeona/api",
-    "test": "npm run test:mobile -w @abeona/api",
+    "test": "npm run test:mobile -w @abeona/api && npm test -w @abeona/provider-connectors",
     "test:mobile": "npm run test:mobile -w @abeona/api"
   }
 }

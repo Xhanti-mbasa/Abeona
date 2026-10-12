@@ -61,7 +61,7 @@ jobs:
         working-directory: .
         run: |
           npm ci --ignore-scripts
-          npm run test:mobile
+          npm test
       - name: Determine version and source
         id: metadata
         env:
@@ -103,14 +103,14 @@ jobs:
           CTTRAINS_KEYSTORE_PASSWORD: ${{ github.event_name != 'pull_request' && secrets.CTTRAINS_KEYSTORE_PASSWORD || '' }}
           CTTRAINS_KEY_ALIAS: ${{ github.event_name != 'pull_request' && secrets.CTTRAINS_KEY_ALIAS || '' }}
           CTTRAINS_KEY_PASSWORD: ${{ github.event_name != 'pull_request' && secrets.CTTRAINS_KEY_PASSWORD || '' }}
-        run: ./gradlew clean :core:test :app:lintDebug :app:lintRelease :app:assembleDebug :app:assembleRelease --no-daemon
+        run: ./gradlew clean :core:test :scrapers:test :scrapers:installDist :app:lintGithubDebug :app:lintGithubRelease :app:lintPlayDebug :app:lintPlayRelease :app:assembleGithubDebug :app:assembleGithubRelease :app:assemblePlayDebug :app:bundlePlayRelease --no-daemon
       - name: Verify and prepare release APK
         env:
           VERSION: ${{ steps.metadata.outputs.version }}
           SIGNING_MODE: ${{ steps.signing.outputs.mode || 'development' }}
         run: |
           set -euo pipefail
-          apk=app/build/outputs/apk/release/app-release.apk
+          apk=app/build/outputs/apk/github/release/app-github-release.apk
           "${ANDROID_HOME}/build-tools/35.0.0/apksigner" verify --verbose "$apk"
           "${ANDROID_HOME}/build-tools/35.0.0/aapt" dump badging "$apk" > "${RUNNER_TEMP}/cttrains-badging.txt"
           if grep -q '^application-debuggable' "${RUNNER_TEMP}/cttrains-badging.txt"; then
@@ -149,9 +149,17 @@ jobs:
         with:
           name: android-check-reports
           path: |
-            apps/android/core/build/reports/tests/test/
+            packages/transit-core/build/reports/tests/test/
             apps/android/app/build/reports/lint-results-*.html
             apps/android/app/schemas/
+      - name: Upload Play candidate bundle and scraper distribution
+        uses: actions/upload-artifact@v4
+        with:
+          name: abeona-play-candidate
+          path: |
+            apps/android/app/build/outputs/bundle/playRelease/app-play-release.aab
+            workers/scrapers/build/install/scrapers/
+          if-no-files-found: error
       - name: Remove signing key
         if: always()
         run: rm -f -- "${RUNNER_TEMP}/cttrains-release.jks"

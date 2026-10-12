@@ -1,4 +1,4 @@
-const axios = require('axios');
+const {readPage}=require('@abeona/provider-connectors');
 const cheerio = require('cheerio');
 
 const BASE_URL = 'https://cttrains.co.za';
@@ -75,10 +75,7 @@ async function scrapeSchedule({ from, to, date, time }) {
     departureTime: departureTime,
   });
 
-  const response = await axios.get(`${SCHEDULE_URL}?${params.toString()}`, {
-    headers: DEFAULT_HEADERS,
-    timeout: 15000,
-  });
+  const response = {data: await readPage(`${SCHEDULE_URL}?${params.toString()}`)};
 
   return parseScheduleResults(response.data, { from, to, date });
 }
@@ -174,10 +171,7 @@ function parseScheduleResults(html, context = {}) {
  * @returns {Promise<object[]>}
  */
 async function scrapeServiceUpdates() {
-  const response = await axios.get(STATUS_URL, {
-    headers: DEFAULT_HEADERS,
-    timeout: 15000,
-  });
+  const response = {data: await readPage(STATUS_URL)};
 
   return parseServiceUpdates(response.data);
 }
@@ -226,7 +220,8 @@ function parseUpdateBlock(text, idx) {
     train_number: null,
     delay_min: null,
     delay_max: null,
-    published_at: new Date().toISOString(),
+    published_at: null,
+    fetched_at: new Date().toISOString(),
   };
 
   const trainMatch = text.match(/T(\d{4})/i);

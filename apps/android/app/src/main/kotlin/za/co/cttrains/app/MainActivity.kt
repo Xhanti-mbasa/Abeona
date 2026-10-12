@@ -14,6 +14,7 @@ import za.co.cttrains.app.ui.TrainTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if(!BuildConfig.GITHUB_DISTRIBUTION) { androidx.work.WorkManager.getInstance(this).cancelUniqueWork("app-update-download");androidx.work.WorkManager.getInstance(this).cancelUniqueWork("app-update-check") }
         enableEdgeToEdge()
         val model = ViewModelProvider(this)[TrainViewModel::class.java]
         val features = ViewModelProvider(this)[FeatureViewModel::class.java]

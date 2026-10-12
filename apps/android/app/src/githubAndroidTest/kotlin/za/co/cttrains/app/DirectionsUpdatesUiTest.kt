@@ -60,7 +60,7 @@ class DirectionsUpdatesUiTest {
         app.waitUntil(15000) { DirectionsRuntime.state.value.running }
         app.waitUntil(15000) { app.activity.getSystemService(NotificationManager::class.java).activeNotifications.any { it.id==DirectionsNotifications.ID } }
         assertEquals(0,DirectionsRuntime.state.value.session!!.index)
-        app.onNodeWithTag("directions-next").performScrollTo().assertTextContains("I'm on board").performClick()
+        app.onNodeWithTag("directions-next").performScrollTo().assertTextContains("I’ve boarded").performClick()
         app.waitUntil(15000) { DirectionsRuntime.state.value.session?.index==1 }
         app.onNodeWithText("Pause",substring=false).performScrollTo().performClick()
         app.waitUntil(15000) { DirectionsRuntime.state.value.session?.paused==true }
@@ -69,6 +69,7 @@ class DirectionsUpdatesUiTest {
         app.onNodeWithText("Resume GPS").performScrollTo().performClick()
         app.waitUntil(15000) { DirectionsRuntime.state.value.session?.paused==false }
         app.onNodeWithTag("directions-stop").performScrollTo().performClick()
+        app.onNodeWithText("Stop journey").performClick()
         app.waitUntil(15000) { !DirectionsRuntime.state.value.running && DirectionsRuntime.state.value.session==null }
         app.waitUntil(15000) { app.activity.getSystemService(NotificationManager::class.java).activeNotifications.none { it.id==DirectionsNotifications.ID } }
     }
@@ -82,8 +83,8 @@ class DirectionsUpdatesUiTest {
         app.onNodeWithText("This is app-level staging",substring=true).assertIsDisplayed()
         UiScreenshots.save("github-update-guide")
         app.runOnUiThread { DirectionsRuntime.state.value=DirectionsState(preview=plan());ViewModelProvider(app.activity)[TrainViewModel::class.java].openDirections() }
-        app.onNodeWithText("Live notifications & Now Bar setup").performClick()
-        app.onNodeWithTag("directions-screen").performScrollToNode(hasText("Notification settings"))
+        app.onNodeWithContentDescription("Journey options").performClick()
+        app.onNodeWithText("Notification settings").performClick()
         app.onNodeWithText("Notification settings").assertIsDisplayed()
         UiScreenshots.save("live-update-now-bar-setup")
     }
@@ -95,7 +96,8 @@ class DirectionsUpdatesUiTest {
             DirectionsRuntime.state.value=DirectionsState(preview=plan())
             vm.openDirections()
         }
-        app.onNodeWithText("View journey map").performScrollTo().performClick()
+        app.onNodeWithContentDescription("Journey options").performClick()
+        app.onNodeWithText("View full map").performClick()
         app.onNodeWithTag("directions-map").assertIsDisplayed()
         app.onNodeWithText("Work → Home").assertIsDisplayed()
         UiScreenshots.save("restored-directions-map-offline")

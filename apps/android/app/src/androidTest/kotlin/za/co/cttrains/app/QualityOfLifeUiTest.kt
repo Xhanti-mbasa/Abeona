@@ -15,7 +15,7 @@ class QualityOfLifeUiTest {
     @get:Rule val app=createAndroidComposeRule<MainActivity>()
     @Test fun mapOptionsCollapseAndExpandedMapKeepsControlsHidden() {
         val train=ViewModelProvider(app.activity)[TrainViewModel::class.java]
-        app.runOnUiThread { train.setMapMode("stations") }
+        app.runOnUiThread { train.setMapMode("stations");train.openMap() }
         app.waitForIdle()
         app.onNodeWithText("Online").assertDoesNotExist()
         app.onNodeWithText("Map options").performClick()
@@ -51,15 +51,15 @@ class QualityOfLifeUiTest {
         app.waitUntil(15000) { features.state.value.extras.beta.run { !goldenArrow && !myCiti && !hostedSharing } }
     }
     @Test fun savedPlacesAndChatAccountSetupAreDiscoverable() {
-        app.onNodeWithText("Plan").performClick()
+        app.onNodeWithTag("nav:plan").performClick()
         val train=ViewModelProvider(app.activity)[TrainViewModel::class.java]
         app.runOnUiThread { train.edit { it.copy(from="",to="") } }
-        app.onNodeWithText("Choose your start").performScrollTo().performClick()
+        app.onNodeWithText("Change").performClick()
         app.onNodeWithText("Where do you leave from?").assertIsDisplayed()
         app.onNodeWithText("Search places, stations or stops").performTextInput("Unibell")
         app.onNode(hasText("Unibell") and hasClickAction() and !hasSetTextAction()).performClick()
-        app.onNodeWithText("Tools").performClick()
-        app.onNodeWithText("Community reports, chat & friends").performClick()
+        app.onNodeWithContentDescription("Settings").performClick()
+        app.onNodeWithText("Community reports & friends").performScrollTo().performClick()
         app.onNodeWithText("Chat").performClick()
         val features=ViewModelProvider(app.activity)[FeatureViewModel::class.java]
         app.waitUntil(15000) { features.state.value.ready }
@@ -74,13 +74,14 @@ class QualityOfLifeUiTest {
         val features=ViewModelProvider(app.activity)[FeatureViewModel::class.java]
         val train=ViewModelProvider(app.activity)[TrainViewModel::class.java]
         app.waitUntil(15000) { features.state.value.ready }
-        app.runOnUiThread { train.setMapMode("stations");features.beta { it.copy(journeyFocus=true,myCiti=true,goldenArrow=true) } }
+        app.runOnUiThread { train.setMapMode("stations");train.openMap();features.beta { it.copy(journeyFocus=true,myCiti=true,goldenArrow=true) } }
         app.waitUntil(15000) { features.state.value.extras.beta.run { journeyFocus && myCiti && goldenArrow } }
         app.onNodeWithText("Map options").performClick()
         app.onNodeWithText("Focus on selected journey").performScrollTo().assertIsDisplayed()
         app.onNodeWithText("Collapse").performClick()
-        app.onNodeWithText("Plan").performClick()
+        app.onNodeWithTag("nav:plan").performClick()
         app.runOnUiThread { train.edit { it.copy(from="Unibell",to="Salt River") } }
+        app.onNodeWithTag("journey-planner").performScrollToNode(hasText("Route preferences & providers"));app.onNodeWithText("Route preferences & providers").performClick()
         app.onNodeWithText("Mode of transport · Trains").performScrollTo().performClick()
         app.onNodeWithText("MyCiTi").performClick()
         app.onNodeWithText("Find MyCiTi routes").performScrollTo().assertIsDisplayed()
@@ -102,7 +103,7 @@ class QualityOfLifeUiTest {
         app.runOnUiThread { features.beta { it.copy(journeyFocus=false,myCiti=false,goldenArrow=false) } }
     }
     @Test fun whatsAppAlphaIsDiscoverableAndHasNoDirectPhoneAccountAccess() {
-        app.onNodeWithText("Tools").performClick()
+        app.onNodeWithContentDescription("Settings").performClick()
         app.onNodeWithText("WhatsApp updates · alpha").performScrollTo().performClick()
         app.onNodeWithText("WhatsApp updates · alpha").assertIsDisplayed()
         app.onNodeWithText("Gateway website · HTTPS").performScrollTo().assertIsDisplayed()
@@ -122,10 +123,11 @@ class QualityOfLifeUiTest {
         val home=za.co.cttrains.core.WalkEndpoint("spot:home","Home",za.co.cttrains.core.GeoPoint(-33.94,18.63))
         val campus=za.co.cttrains.core.WalkEndpoint("spot:campus","Campus",za.co.cttrains.core.GeoPoint(-33.93,18.46))
         app.runOnUiThread { train.edit { it.copy(from="Unibell",to="Salt River") };features.place(home,true);features.place(campus,false) }
-        app.onNodeWithText("Plan").performClick()
+        app.onNodeWithTag("nav:plan").performClick()
+        app.onNodeWithTag("journey-planner").performScrollToNode(hasText("Route preferences & providers"));app.onNodeWithText("Route preferences & providers").performClick()
         app.onNodeWithText("Swap From and To").performScrollTo().performClick()
         app.runOnIdle { assertEquals(campus,features.state.value.access);assertEquals(home,features.state.value.destination);assertEquals("Salt River",train.state.value.from);assertEquals("Unibell",train.state.value.to) }
-        app.onNodeWithTag("journey-planner").performScrollToNode(hasText("Travel date"))
+        app.onNodeWithText("Travel date").performScrollTo()
         app.onNodeWithText("Travel date").performClick()
         app.onNodeWithText("Choose date").assertIsDisplayed()
         UiScreenshots.save("journey-calendar")

@@ -7,3 +7,6 @@ rootProject.name = "Abeona"
 include(":app", ":core")
 
 project(":core").projectDir = file("../../packages/transit-core")
+
+include(":scrapers")
+project(":scrapers").projectDir = file("../../workers/scrapers")

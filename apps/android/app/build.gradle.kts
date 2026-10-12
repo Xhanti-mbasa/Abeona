@@ -37,6 +37,11 @@ android {
         buildConfigField("String", "TRANSIT_BASE_URL", quoted(transitUrl.trimEnd('/')))
         buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", quoted(System.getenv("CTTRAINS_GOOGLE_WEB_CLIENT_ID") ?: localSecrets.getProperty("CTTRAINS_GOOGLE_WEB_CLIENT_ID", "")))
     }
+    flavorDimensions += "distribution"
+    productFlavors {
+        create("play") { dimension="distribution"; buildConfigField("boolean", "GITHUB_DISTRIBUTION", "false") }
+        create("github") { dimension="distribution"; buildConfigField("boolean", "GITHUB_DISTRIBUTION", "true") }
+    }
     signingConfigs {
         if (!releaseStore.isNullOrBlank()) {
             create("production") {
@@ -60,11 +65,13 @@ android {
     }
     compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
     kotlinOptions { jvmTarget = "17" }
+    sourceSets.getByName("androidTest").assets.srcDir(rootProject.file("../../fixtures/providers/html"))
     buildFeatures { compose = true; buildConfig = true }
     packaging { resources.excludes += "/META-INF/{AL2.0,LGPL2.1}" }
 }
 dependencies {
-    implementation("com.android.tools.build:apksig:8.9.2")
+    "githubImplementation"("com.android.tools.build:apksig:8.9.2")
+    "playImplementation"("com.google.android.play:app-update:2.1.0")
     implementation("androidx.navigation:navigation-compose:2.8.9")
     implementation("androidx.room:room-runtime:2.7.1")
     implementation("androidx.room:room-ktx:2.7.1")
@@ -86,10 +93,6 @@ dependencies {
     implementation("androidx.datastore:datastore-preferences:1.1.4")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("org.jsoup:jsoup:1.18.3")
-    implementation("com.tom-roush:pdfbox-android:2.0.27.0") {
-        // Only text extraction from unencrypted public timetables; no PDF certificate/EST clients.
-        exclude(group="org.bouncycastle",module="bcpkix-jdk15to18")
-    }
     implementation("androidx.credentials:credentials:1.5.0")
     implementation("androidx.credentials:credentials-play-services-auth:1.5.0")
     implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")

@@ -65,7 +65,7 @@ router.get('/', async (req, res) => {
   }
 
   const cacheKey = `schedule:${fromStation}:${toStation}:${date}:${time || '06:00'}`;
-  const cached = cache.get(cacheKey);
+  const cached = await cache.get(cacheKey);
   if (cached) return res.json({ ...cached, cached: true });
 
   try {
@@ -82,7 +82,7 @@ router.get('/', async (req, res) => {
       disclaimer: 'CTTrains is an independent community service — not affiliated with Metrorail. Schedule accuracy not guaranteed.',
     };
 
-    cache.set(cacheKey, result, SCHEDULE_TTL);
+    await cache.set(cacheKey, result, SCHEDULE_TTL);
     res.json(result);
   } catch (err) {
     console.error('[schedules]', err.message);
@@ -131,7 +131,7 @@ router.get('/lines/:lineId', async (req, res) => {
   if (fromStation === toStation) return res.status(400).json({ error: 'Departure and arrival stations cannot be the same.' });
 
   const cacheKey = `line:${lineId}:${fromStation}:${toStation}:${days}:${search_by}:${time}`;
-  const cached = cache.get(cacheKey);
+  const cached = await cache.get(cacheKey);
   if (cached) return res.json({ ...cached, cached: true });
 
   try {
@@ -150,7 +150,7 @@ router.get('/lines/:lineId', async (req, res) => {
       source: 'https://cttrains.co.za',
     };
 
-    cache.set(cacheKey, result, SCHEDULE_TTL);
+    await cache.set(cacheKey, result, SCHEDULE_TTL);
     res.json(result);
   } catch (err) {
     console.error('[schedules/lines]', err.message);

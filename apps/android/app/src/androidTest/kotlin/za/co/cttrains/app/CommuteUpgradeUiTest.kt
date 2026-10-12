@@ -27,7 +27,6 @@ class CommuteUpgradeUiTest {
         runBlocking { features.store.update { it.copy(spots=listOf(home)) } }
         app.waitUntil(15000) { features.state.value.extras.spots.any { it.id==home.id } }
         app.onNodeWithText("Saved").performClick()
-        app.onNodeWithText("Home, Work & School · manage addresses").performScrollTo().performClick()
         app.onNodeWithTag("edit-address:Home").performScrollTo().performClick()
         app.onNodeWithText("Search places, stations or stops").performTextInput("Salt River")
         app.onNodeWithTag("place-choice:station:saltriver").performScrollTo().performClick()
@@ -36,7 +35,7 @@ class CommuteUpgradeUiTest {
         app.waitUntil(15000) { features.state.value.extras.spots.single().note=="Salt River" }
         assertEquals("test-home",features.state.value.extras.spots.single().id)
         assertEquals("Unibell",features.state.value.extras.spots.single().preferredStation)
-        app.onNodeWithText("To here").performScrollTo().performClick()
+        app.onAllNodesWithText("To here")[0].performScrollTo().performClick()
         app.waitUntil(15000) { features.state.value.destination?.id=="spot:test-home" }
         assertEquals("Unibell",features.state.value.arrivalStation)
         UiScreenshots.save("saved-home-plan")
@@ -45,7 +44,7 @@ class CommuteUpgradeUiTest {
         val r=CommuteRoutine("test-repeat","Morning commute",SearchQuery("Salt River","Unibell","2026-10-12","08:00"),setOf(1,2,3,4,5),"cttrains-web",20,5,createdAt=1)
         runBlocking { features.store.update { it.copy(routines=listOf(r)) } }
         app.waitUntil(15000) { features.state.value.extras.routines.size==1 }
-        app.onNodeWithText("Journeys").performClick()
+        app.onNodeWithTag("nav:upcoming").performClick()
         app.onNodeWithText("Edit recurrence").performScrollTo().performClick()
         app.onNodeWithTag("repeat-day:6").performClick()
         app.onNodeWithTag("save-routine").performScrollTo().performClick()

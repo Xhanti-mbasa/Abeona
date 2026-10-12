@@ -19,7 +19,7 @@ const CACHE_KEY = 'service_updates';
 router.get('/', async (req, res) => {
   const { line } = req.query;
 
-  const cached = cache.get(CACHE_KEY);
+  const cached = await cache.get(CACHE_KEY);
   let updates;
 
   if (cached) {
@@ -27,7 +27,7 @@ router.get('/', async (req, res) => {
   } else {
     try {
       updates = await scrapeServiceUpdates();
-      cache.set(CACHE_KEY, updates, UPDATES_TTL);
+      await cache.set(CACHE_KEY, updates, UPDATES_TTL);
     } catch (err) {
       console.error('[updates]', err.message);
       return res.status(502).json({

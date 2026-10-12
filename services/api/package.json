@@ -36,7 +36,9 @@
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "ioredis": "^5.6.1",
-    "node-cron": "^4.2.1"
+    "node-cron": "^4.2.1",
+    "@abeona/provider-connectors": "1.0.0",
+    "@abeona/contracts": "1.0.0"
   },
   "private": true
 }
