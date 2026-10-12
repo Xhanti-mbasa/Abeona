@@ -93,8 +93,15 @@ class AbeonaJourneyUiTest {
         app.activityRule.scenario.recreate()
         val reopened=ViewModelProvider(app.activity)[TrainViewModel::class.java]
         app.waitUntil(15000) { reopened.state.value.from==query.from && reopened.state.value.to==query.to && reopened.state.value.time==query.time }
-        assertEquals(java.time.LocalDate.now(CapeTownZone).toString(),reopened.state.value.date)
+        assertEquals(query.date,reopened.state.value.date) // Android retains the ViewModel during recreation.
         assertEquals(query,runBlocking { TrainRepository(app.activity).store.preferences.first().lastQuery })
+        val coldStore=androidx.lifecycle.ViewModelStore()
+        lateinit var cold: TrainViewModel
+        try {
+            app.runOnUiThread { cold=ViewModelProvider(coldStore,ViewModelProvider.AndroidViewModelFactory.getInstance(app.activity.application))[TrainViewModel::class.java] }
+            app.waitUntil(15000) { cold.state.value.from==query.from && cold.state.value.to==query.to && cold.state.value.time==query.time }
+            assertEquals(java.time.LocalDate.now(CapeTownZone).toString(),cold.state.value.date)
+        } finally { app.runOnUiThread { coldStore.clear() } }
     }
     @Test fun brokenBuildSourcePreferenceRecoversWithoutLosingStationsOrTheme() {
         runBlocking { train.repository.updatePreferences { it.copy(sourceId="cttrains-api",theme="Dark",favoriteStations=listOf("Unibell")) } }
