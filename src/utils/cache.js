@@ -37,7 +37,7 @@ async function initRedis() {
     });
 
     await redis.connect();
-    console.log('[cache] Redis connected:', process.env.REDIS_URL);
+    console.log('[cache] Redis connected');
   } catch (err) {
     console.warn('[cache] Redis unavailable (memory-only fallback):', err.message);
     redis = null;

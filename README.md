@@ -1,4 +1,12 @@
-# CTTrains API
+# Abeona
+
+**Predominantly built with AI**
+
+Abeona is the next version of the existing CTTrains Android transport app. This branch contains the recovered app and backend plus initial stabilisation. The full redesign and final monorepo structure await visual selection. No Google Play readiness is claimed.
+
+See [inspection and blockers](docs/production/inspection-2026-10-12.md), [provider inventory](docs/production/provider-inventory.md), and [monorepo and release plan](docs/production/monorepo-and-release-plan.md).
+
+## Existing CTTrains API
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
@@ -9,7 +17,7 @@ An unofficial REST API and Model Context Protocol (MCP) server for Cape Town Met
 
 The [`android/`](android/README.md) directory contains a native **Kotlin + Jetpack Compose + Google Material 3** transit app: online and downloadable offline MapLibre/OpenFreeMap maps without Google keys or login, full-screen maps with mapped rail traces and numbered transfer/platform details, native CT Trains alerts, journey planning, local fare corrections and budget totals, favourites, saved leave-by plans with custom backup reminders, service tools and user-reviewed calendar export. Private content uses encrypted local Room storage. It works with direct CT Trains access or the normalized `/mobile/v1` backend. Open `android/` in Android Studio. See the [setup and limits](android/README.md) and [staged architecture](android/docs/TRANSIT_ARCHITECTURE.md).
 
-The **Android build and release** GitHub Action tests, lints and builds both APK variants, then publishes a verified APK and checksum to GitHub Releases on Android changes to `main`, `android-v*` tags, or a manual run on `main`. Development-signed builds are labelled prereleases; optional private signing secrets support production releases. See the [release instructions](android/README.md#github-releases).
+The **Android build and release** GitHub Action tests, lints and builds both APK variants. Publishing a verified APK and checksum to GitHub Releases now requires an explicit manual run with `publish_github_release` enabled. Development-signed builds are labelled prereleases; optional private signing secrets support production releases. See the [release instructions](android/README.md#github-releases).
 
 > **Disclaimer:** This project is a community-built tool and is **not affiliated with or endorsed by Metrorail or PRASA**. 
 

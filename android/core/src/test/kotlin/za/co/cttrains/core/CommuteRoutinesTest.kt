@@ -42,4 +42,20 @@ class CommuteRoutinesTest {
         assertEquals(shared,TripFiles.parse(TripFiles.json.encodeToString(shared)))
         assertFalse(TripFiles.json.encodeToString(shared).contains("latitude"))
     }
+    @Test fun sharingPreservesFractionalWalkingDurationsAndDefaultsMissingDurationsToZero() {
+        val board=JourneyComparison.requestedAt("2026-10-12","08:00")
+        val plan=DirectionsPlan("fractional","Home to Work",listOf(
+            DirectionStep("walk1",DirectionKind.WALK,"Walk to crossing","",null,durationSeconds=60.125),
+            DirectionStep("walk2",DirectionKind.WALK,"Walk to station","",null,durationSeconds=30.25),
+            DirectionStep("board",DirectionKind.BOARD,"Board train","",null,scheduledAt=board),
+            DirectionStep("ride",DirectionKind.RIDE,"Get off train","",null,scheduledAt=board+1800000),
+            DirectionStep("final",DirectionKind.WALK,"Walk to Work","",null,durationSeconds=30.375),
+            DirectionStep("unknown",DirectionKind.WALK,"Arrive at Work","",null)
+        ),1,1)
+        val shared=JourneySharing.itinerary(plan,TransportService.PRASA,"Traveller",2)
+        assertEquals(board-30250,shared.steps[0].at)
+        assertEquals(board,shared.steps[1].at)
+        assertEquals(board+1830375,shared.steps[4].at)
+        assertEquals(shared.steps[4].at,shared.steps[5].at)
+    }
 }

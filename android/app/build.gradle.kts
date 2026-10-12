@@ -29,7 +29,7 @@ android {
     defaultConfig {
         applicationId = "za.co.cttrains.app"
         minSdk = 26
-        targetSdk = 35
+        targetSdk = 36
         versionCode = (System.getenv("CTTRAINS_VERSION_CODE") ?: appVersion.getProperty("versionCode"))
             .toInt().also { require(it > 0) { "versionCode must be positive" } }
         versionName = System.getenv("CTTRAINS_VERSION_NAME") ?: appVersion.getProperty("versionName")

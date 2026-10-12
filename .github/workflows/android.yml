@@ -13,6 +13,11 @@ on:
         description: "Optional version tag (for example android-v1.0.1); blank creates a build tag"
         required: false
         type: string
+      publish_github_release:
+        description: "Publish a verified GitHub APK release (separate from Google Play)"
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -194,7 +199,7 @@ jobs:
 
   publish:
     needs: [build, device]
-    if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/android-v'))
+    if: github.event_name == 'workflow_dispatch' && inputs.publish_github_release && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/android-v'))
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:

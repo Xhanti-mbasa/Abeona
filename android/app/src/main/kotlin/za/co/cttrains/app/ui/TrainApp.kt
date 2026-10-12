@@ -29,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -40,6 +41,7 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 import za.co.cttrains.app.TrainState
 import za.co.cttrains.app.BuildConfig
+import za.co.cttrains.app.R
 import za.co.cttrains.app.TrainViewModel
 import za.co.cttrains.core.*
 import androidx.navigation.compose.*
@@ -84,7 +86,7 @@ fun TrainApp(state: TrainState, model: TrainViewModel) {
         topBar = { if (!fullMap) Column { CenterAlignedTopAppBar(title = {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 Icon(Icons.Outlined.Train, null, tint = MaterialTheme.colorScheme.primary)
-                Text("CT Trains", fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.app_name), fontWeight = FontWeight.Bold)
             }
         }, actions = {
             IconButton(onClick = { go("alerts") }) { Icon(Icons.Outlined.NotificationsActive, "Service alerts") }
@@ -445,7 +447,8 @@ private fun AboutScreen(state: TrainState, model: TrainViewModel,feature: za.co.
         OutlinedButton(onClick = model::openAlerts) { Text("Updates & delays") }
         OutlinedButton(onClick = { uri.openUri("https://cttrains.co.za/train-form.php") }, modifier = Modifier.fillMaxWidth()) { Icon(Icons.AutoMirrored.Outlined.OpenInNew, null); Spacer(Modifier.width(8.dp)); Text("Visit CT Trains") }
         TextButton(onClick = { uri.openUri("https://github.com/Xhanti-mbasa") }) { Text("Built by Xhanti-mbasa · GitHub",style=MaterialTheme.typography.labelMedium) }
-        Text("CT Trains for Android · ${BuildConfig.VERSION_NAME}", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text("${stringResource(R.string.app_name)} for Android · ${BuildConfig.VERSION_NAME}", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(stringResource(R.string.ai_build_credit), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
     if (confirmClear) AlertDialog(onDismissRequest = { confirmClear = false }, title = { Text("Clear saved timetables?") }, text = { Text("You’ll need an internet connection for your next search. Your favourite routes will stay saved.") }, confirmButton = { TextButton(onClick = { model.clearCache(); confirmClear = false }) { Text("Clear") } }, dismissButton = { TextButton(onClick = { confirmClear = false }) { Text("Cancel") } })
     if (confirmProfile) AlertDialog(onDismissRequest = { confirmProfile = false }, title = { Text("Delete your local profile?") }, text = { Text("Favourites, corrections, journeys, reminders, personal spots/photos, trip files, account sessions and saved timetables will be removed. Public offline maps are managed separately. External backup files and calendar events remain at their chosen locations.") }, confirmButton = { TextButton(onClick = { features.reset();model.clearPersonalData(); confirmProfile = false }) { Text("Delete local data") } }, dismissButton = { TextButton(onClick = { confirmProfile = false }) { Text("Cancel") } })
