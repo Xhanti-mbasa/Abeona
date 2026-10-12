@@ -58,7 +58,7 @@ class TripLiveService: Service() {
                         val location=ForegroundLocation.sample(this@TripLiveService)?.takeIf { it.capturedAt<=now+30_000 && now-it.capturedAt<=120_000 }
                         val near=location?.let { p -> NearbySuggestions.station(GeoPoint(p.latitude,p.longitude),p.accuracyMeters,store.store.stations.first())?.name }
                         val update=FriendUpdate(c.link.id,now,now,c.link.expiresAt,c.phase,location?.let { GeoPoint(it.latitude,it.longitude) },location?.accuracyMeters,near)
-                        try { client.send(s,c.link.room,"Encrypted CT Trains trip update",update=CircleUpdates.seal(c.link,update),transaction="trip-$now") }
+                        try { client.send(s,c.link.room,"Encrypted Abeona trip update",update=CircleUpdates.seal(c.link,update),transaction="trip-$now") }
                         catch(e: Exception) { if(e is CancellationException) throw e } // No offline location queue.
                     }
                     val watched=(mutablePositions.value+store.watched()).groupBy { it.id }.mapValues { (_,rows)->rows.maxBy { it.update.sequence } }.toMutableMap()

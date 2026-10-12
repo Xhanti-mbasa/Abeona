@@ -14,6 +14,12 @@ if [[ "$actual_page_size" != "$expected_page_size" ]]; then
     echo "Expected $expected_page_size byte pages; emulator reports $actual_page_size." >&2
     exit 1
 fi
+mkdir -p app/build/outputs/ui-screenshots
+if [[ "$expected_page_size" == 16384 ]]; then
+    adb shell setprop bionic.linker.16kb.app_compat.enabled false
+    adb shell setprop pm.16kb.app_compat.disabled true
+fi
+printf 'distribution=%s\npage_size=%s\nfingerprint=%s\n' "$distribution" "$actual_page_size" "$(adb shell getprop ro.build.fingerprint | tr -d '\r')" > app/build/outputs/ui-screenshots/device-environment.txt
 ./gradlew "$task" --no-daemon || test_status=$?
 # Copy while emulator-runner still has the device connected, including failures.
 mkdir -p app/build/outputs/ui-screenshots

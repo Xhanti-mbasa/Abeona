@@ -7,3 +7,11 @@ test('proxy rejects arbitrary URLs and provider mismatches',async t=>{let calls=
 test('importing API opens no socket or polling job',()=>{assert.equal(typeof require('../index').createApp,'function');});
 
 test('API starts and serves health on a real loopback socket',async t=>{const {start}=require('../index');const server=await start({port:0,host:'127.0.0.1',handleSignals:false});await new Promise(r=>server.listening?r():server.once('listening',r));t.after(()=>new Promise(r=>{server.closeAllConnections();server.close(r);}));const response=await fetch(`http://127.0.0.1:${server.address().port}/health`);assert.equal(response.status,200);assert.equal((await response.json()).status,'ok');});
+test('common bus endpoint retains coordinates, official route details and published fare products',async t=>{
+ const value={service:'MYCITI',fetchedAt:Date.now(),routes:[{id:'101',title:'Route 101',url:'https://www.myciti.org.za/101/'}],stops:[{id:'s',name:'Civic Centre',point:{latitude:-33.92,longitude:18.43},routes:['101']}],fares:[{id:'distance',title:'Peak',products:{Single:1900},rules:'Distance band'}],shapes:[]};
+ const get=await service(t,async()=>({data:value})),response=await get('/normalized/providers/MYCITI/snapshot');assert.equal(response.status,200);const a=await response.json();assert.equal(a.routes[0].stopIds[0],a.stops[0].id);assert.deepEqual(a.stops[0].point,value.stops[0].point);assert.equal(a.fares[0].amountMinor,1900);assert.equal(a.routes[0].providerDetails.url,value.routes[0].url);
+});
+test('a malformed retained normalized contract returns a bounded error rather than crashing',async t=>{
+ const cache=new MemoryCache();await cache.set('provider:v1:MYCITI:snapshot:{}',{service:'MYCITI',fetchedAt:Date.now()},60);
+ const get=await service(t,async()=>{throw new Error('offline');},cache),response=await get('/normalized/providers/MYCITI/snapshot');assert.equal(response.status,502);assert.equal((await response.json()).sourceAvailable,false);
+});

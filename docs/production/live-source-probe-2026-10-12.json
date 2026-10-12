@@ -1,0 +1,94 @@
+{
+  "date": "2026-10-12",
+  "checks": {
+    "apiHealth": {
+      "status": "ok"
+    },
+    "railCatalogue": {
+      "stations": 102
+    },
+    "railJourney": {
+      "journeys": 4,
+      "provenance": {
+        "provider": "PRASA",
+        "kind": "scheduled",
+        "fetchedAt": 1791825954746,
+        "publishedAt": null,
+        "cached": false,
+        "sourceAvailable": true
+      },
+      "legs": 2
+    },
+    "workerHealth": {
+      "status": "ok",
+      "providers": {
+        "MYCITI": {
+          "available": true,
+          "refreshing": false,
+          "checkedAt": 1791825936722,
+          "catalogueCheckedAt": 1791825936722,
+          "mapFetchedAt": 1791825936722,
+          "faresCheckedAt": 1791825936722
+        },
+        "GOLDEN_ARROW": {
+          "available": true,
+          "refreshing": false,
+          "checkedAt": 1791825936722,
+          "catalogueCheckedAt": 1791825936722,
+          "mapFetchedAt": 1791825936722,
+          "faresCheckedAt": 1791825936722
+        }
+      }
+    },
+    "MYCITISnapshot": {
+      "routes": 47,
+      "stops": 530,
+      "provenance": {
+        "provider": "MYCITI",
+        "kind": "scheduled",
+        "fetchedAt": 1791825936722,
+        "publishedAt": null,
+        "cached": false,
+        "sourceAvailable": true
+      }
+    },
+    "MYCITITimetable": {
+      "route": "101",
+      "trips": 28,
+      "provenance": {
+        "provider": "MYCITI",
+        "kind": "scheduled",
+        "fetchedAt": 1791826023036,
+        "publishedAt": null,
+        "cached": false,
+        "sourceAvailable": true
+      }
+    },
+    "GOLDEN_ARROWSnapshot": {
+      "routes": 1884,
+      "stops": 3569,
+      "provenance": {
+        "provider": "GOLDEN_ARROW",
+        "kind": "scheduled",
+        "fetchedAt": 1791825936722,
+        "publishedAt": null,
+        "cached": false,
+        "sourceAvailable": true
+      }
+    },
+    "GOLDEN_ARROWTimetable": {
+      "route": "004402:AIRPORT_IND___BELLVILLE_from_20261005_to_99999999_004402.pdf",
+      "trips": 18,
+      "provenance": {
+        "provider": "GOLDEN_ARROW",
+        "kind": "scheduled",
+        "fetchedAt": 1791826025907,
+        "publishedAt": null,
+        "cached": false,
+        "sourceAvailable": true
+      }
+    }
+  },
+  "sourceBasis": "d2c1afeb4c0ac4fbbcf5356b66f1ef6cc7c68cd5",
+  "workingTree": "After d2c1afe: source-availability and normalized-contract changes; exact observations, not an availability guarantee."
+}

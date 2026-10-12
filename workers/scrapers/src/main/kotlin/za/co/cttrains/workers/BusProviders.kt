@@ -110,7 +110,7 @@ class GoldenArrowProvider: BusProvider {
         val reuse=!forceMap && previous?.stops?.isNotEmpty()==true && now-previous.mapFetchedAt<24*60*60_000L
         val stops=if(reuse) previous!!.stops else retain("Surveyed stops",previous?.stops.orEmpty()) { BusSources.goldenStops(uniqueStops()).map { it.copy(routes=emptyList()) }.also { mapAt=now } }
         val shapes=if(reuse && previous!!.shapes.isNotEmpty()) previous.shapes else retain("Surveyed routes",previous?.shapes.orEmpty()) { BusSources.goldenShapes(survey(5)) }
-        BusSources.validate(BusSnapshot(service,now,routes,stops,shapes,fare.first,"Government survey: one representative survey record per stop code; unnumbered stops use name/position, not separate platform/direction positions; capture date not supplied. Current service at a surveyed stop is unverified. Map shapes are simplified by the source for display. Survey route codes are not automatically matched to timetable numbers.",fare.second,mapAt,catalogueAt,faresAt,notes))
+        BusSources.validate(BusSnapshot(service,maxOf(mapAt,catalogueAt,faresAt),routes,stops,shapes,fare.first,"Government survey: one representative survey record per stop code; unnumbered stops use name/position, not separate platform/direction positions; capture date not supplied. Current service at a surveyed stop is unverified. Map shapes are simplified by the source for display. Survey route codes are not automatically matched to timetable numbers.",fare.second,mapAt,catalogueAt,faresAt,notes))
     }
     override suspend fun timetable(route: BusRouteDocument,day: String)=withContext(Dispatchers.IO) {
         require(BusSources.officialUrl(route.url,service) && route.pdf)

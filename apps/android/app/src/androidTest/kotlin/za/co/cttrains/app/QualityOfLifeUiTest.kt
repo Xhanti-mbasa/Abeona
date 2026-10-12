@@ -1,7 +1,6 @@
 package za.co.cttrains.app
 
 import androidx.compose.ui.test.*
-import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.lifecycle.ViewModelProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -95,9 +94,6 @@ class QualityOfLifeUiTest {
         app.onNodeWithText("Compare routes").performScrollTo().assertIsDisplayed()
         app.onNodeWithText("Mode of transport · Compare").performScrollTo()
         UiScreenshots.save("planner-compare")
-        val image=app.onRoot().captureToImage()
-        val file=java.io.File(app.activity.getExternalFilesDir(null),"ui-screenshots/planner-compare.png").apply { parentFile!!.mkdirs() }
-        file.outputStream().use { image.asAndroidBitmap().compress(android.graphics.Bitmap.CompressFormat.PNG,100,it) }
         app.onNodeWithTag("journey-place:From").performScrollTo().assertTextContains("Unibell")
         app.onNodeWithTag("journey-place:To").performScrollTo().assertTextContains("Salt River")
         app.runOnUiThread { features.beta { it.copy(journeyFocus=false,myCiti=false,goldenArrow=false) } }
@@ -113,8 +109,8 @@ class QualityOfLifeUiTest {
         app.onNodeWithText("Set up WhatsApp updates").assertIsDisplayed()
         UiScreenshots.save("whatsapp-setup-guide")
         app.onNodeWithTag("whatsapp-setup-guide")
-            .performScrollToNode(hasText("5 · Connect in CT Trains"))
-        app.onNodeWithText("5 · Connect in CT Trains").assertIsDisplayed()
+            .performScrollToNode(hasText("5 · Connect in Abeona"))
+        app.onNodeWithText("5 · Connect in Abeona").assertIsDisplayed()
     }
     @Test fun calendarTimeSelectorAndSwapPreserveCustomEndpoints() {
         val train=ViewModelProvider(app.activity)[TrainViewModel::class.java]

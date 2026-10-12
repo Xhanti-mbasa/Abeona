@@ -99,7 +99,7 @@ fun TrainApp(state: TrainState, model: TrainViewModel) {
                 composable("saved") { SavedAddressesScreen(state,model,feature,features,{ go("plan") },{ go("map") }) }
                 composable("places") { SavedAddressesScreen(state,model,feature,features,{ go("plan") },{ go("map") }) }
                 composable("upcoming") { UpcomingScreen(state, model) }
-                composable("settings") { AboutScreen(state, model,feature,features,{ go("buses") },{ go("trips") },{ go("community") },{ go("whatsapp") },{ go("directions") },{ go("app-updates") }) }
+                composable("settings") { AboutScreen(state, model,feature,features,{ go("buses") },{ go("trips") },{ go("community") },{ go("whatsapp") },{ go("directions") },{ go("app-updates") },{ go("budget") }) }
                 composable("budget") { BudgetScreen(state, model) { go("plan") } }
                 composable("alerts") { AlertsScreen(state, model) }
                 composable("buses") { BusScreen(feature,features,{ go("trips") }) { service,route -> model.selectJourney(null);features.showBusMap(service,route);go("map") } }
@@ -182,7 +182,7 @@ private fun TimeDropdown(label: String, values: List<Int>, selected: Int, modifi
 }
 
 @Composable
-private fun AboutScreen(state: TrainState, model: TrainViewModel,feature: za.co.cttrains.app.FeatureState,features: za.co.cttrains.app.FeatureViewModel,onBuses: ()->Unit,onTrips: ()->Unit,onCommunity: ()->Unit,onWhatsApp: ()->Unit,onDirections: ()->Unit,onUpdates: ()->Unit) {
+private fun AboutScreen(state: TrainState, model: TrainViewModel,feature: za.co.cttrains.app.FeatureState,features: za.co.cttrains.app.FeatureViewModel,onBuses: ()->Unit,onTrips: ()->Unit,onCommunity: ()->Unit,onWhatsApp: ()->Unit,onDirections: ()->Unit,onUpdates: ()->Unit,onBudget: ()->Unit) {
     val uri = LocalUriHandler.current
     var confirmClear by remember { mutableStateOf(false) }
     var confirmProfile by remember { mutableStateOf(false) }
@@ -192,6 +192,7 @@ private fun AboutScreen(state: TrainState, model: TrainViewModel,feature: za.co.
         FilledTonalButton(onClick=onDirections,modifier=Modifier.fillMaxWidth()) { Text("Journey directions & Live Updates") }
         OutlinedButton(onClick=onUpdates,modifier=Modifier.fillMaxWidth()) { Text("App updates") }
         OutlinedButton(onClick=model::openMap,modifier=Modifier.fillMaxWidth()) { Icon(Icons.Outlined.Map,null);Spacer(Modifier.width(8.dp));Text("Explore transport map") }
+        OutlinedButton(onClick=onBudget,modifier=Modifier.fillMaxWidth()) { Text("Travel budget & fare corrections") }
         BetaSettings(feature,features,onBuses,onTrips,onCommunity,onWhatsApp)
         FeatureStatus(feature)
         ProfileSettings(feature,features)

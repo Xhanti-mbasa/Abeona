@@ -34,7 +34,7 @@ class MatrixClient {
         val flows=call(base,listOf("login"))["flows"]?.jsonArray.orEmpty()
         require(flows.any { it.jsonObject["type"]?.jsonPrimitive?.content=="m.login.password" }) { "This server requires SSO. Use an access token obtained in its trusted client." }
         val result=call(base,listOf("login"),"POST",buildJsonObject {
-            put("type","m.login.password");put("identifier",buildJsonObject { put("type","m.id.user");put("user",user) });put("password",password);put("initial_device_display_name","CT Trains")
+            put("type","m.login.password");put("identifier",buildJsonObject { put("type","m.id.user");put("user",user) });put("password",password);put("initial_device_display_name","Abeona")
         })
         return validateSession(MatrixSession(server(base),result.getValue("user_id").jsonPrimitive.content,result.getValue("access_token").jsonPrimitive.content,result["device_id"]?.jsonPrimitive?.content.orEmpty()))
     }

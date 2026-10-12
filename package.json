@@ -10,7 +10,10 @@
   "scripts": {
     "start": "npm run start -w @abeona/api",
     "dev": "npm run dev -w @abeona/api",
-    "test": "npm run test:mobile -w @abeona/api && npm test -w @abeona/provider-connectors",
+    "test": "npm run test:mobile -w @abeona/api && npm test -w @abeona/provider-connectors && node --test packages/contracts/*.test.js",
     "test:mobile": "npm run test:mobile -w @abeona/api"
+  },
+  "devDependencies": {
+    "ajv": "8.17.1"
   }
 }

@@ -39,9 +39,9 @@ No taxi, rideshare, intercity or other transport integration is assumed.
 | Redis | Optional backend cache | Credentials backend-only; server retention and cache bounds; connection URL no longer logged |
 | MCP/Gemini bridge | Existing backend tools | Optional backend-only API key; keep out of mobile package and deployments unless deliberately enabled |
 
-## Provider boundary to implement after visual selection
+## Provider boundary
 
-Each provider should declare capabilities (stops, schedules, route planning, fares, disruptions, real-time vehicles). Separate normalized data from provider-specific extensions and provenance. Required timestamps: fetchedAt, optional upstreamPublishedAt/observedAt, expiresAt and original cache time. Data kind: scheduled, live, cached or unavailable. Only mark live when a supported upstream observation exists.
+Each provider declares capabilities (stops, schedules, fares, disruptions and live-vehicle availability). The common versioned contract in `packages/contracts` normalizes provider data and retains provider-specific fields. Fetch/report/check times remain distinct. Cached data retains its source kind; only mark data live when a supported upstream observation exists.
 
 Keep independently testable parsers and original fixtures. Backend connector errors should identify provider, capability and retryability, avoid secrets and private route/location data in logs, and return useful cached data with its original timestamps when allowed.
 
@@ -50,3 +50,15 @@ Workers need bounded requests and concurrency, timeouts, capped retries with jit
 ## Monorepo execution update
 
 Operator requests now use server-side host gates, response caps, bounded retries and last known good data with original timestamps. MyCiTi and Golden Arrow catalogue refreshes run in the JVM worker; Android PDFBox was removed. Public PDF regression fixtures moved to fixtures/providers/pdf and execute with server PDFBox. No private provider feed or live vehicle GPS integration has been supplied. Node legacy endpoints remain compatibility adapters; shared captured fixtures guard the normalized rail representation.
+
+## Live source probe, 12 October 2026
+
+The real Node API, JVM worker and their HTTP network were exercised locally; the observation log is [live-source-probe-2026-10-12.json](live-source-probe-2026-10-12.json). No account, provider secret or user location was used.
+
+| Source | Observed result | Remaining qualification |
+| --- | --- | --- |
+| CT Trains | 102 catalogue stations; 4 Unibell → Salt River journeys for 13 October at 07:00, including separate transfer legs | Point-in-time scheduled website data, not vehicle tracking or licensed feed access |
+| MyCiTi | 47 routes, 530 stops; route 101 Monday timetable parsed 28 trips | Published route/day coverage, source permissions and production reliability still require review |
+| Golden Arrow | 1,884 catalogue documents, 3,569 surveyed stop locations; first published Airport Industria → Bellville Monday PDF parsed 18 trips | Cold refresh needs time; survey membership/current operation remains unverified. This probe does not validate every document, fare or journey |
+
+Golden Arrow initially returned a warming response and then completed successfully. The app/API retain usable cached data during that period. Health now distinguishes partial source failures; component timestamps are not reset when data is retained. Published/source ages, permission, licensing and optional service capacity are separate from HTTP availability.

@@ -20,6 +20,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.delay
@@ -277,10 +281,14 @@ import za.co.cttrains.core.*
     var repeatEdit by remember { mutableStateOf<CommuteRoutine?>(null) }
     var selectFare by remember { mutableStateOf(false) }
     var fare by remember(option.id) { mutableStateOf(option.fares.firstOrNull()) }
+    val isRouteSelected=selected
     val clock=remember { DateTimeFormatter.ofPattern("HH:mm").withZone(CapeTownZone) }
-    Card(onClick=onSelect,modifier=Modifier.fillMaxWidth().testTag("route-option:${option.id}"),border=BorderStroke(if(selected) 1.5.dp else 1.dp,if(selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant),colors=CardDefaults.cardColors(containerColor=MaterialTheme.colorScheme.surfaceContainer)) { Column(Modifier.padding(16.dp),verticalArrangement=Arrangement.spacedBy(8.dp)) {
+    Card(onClick=onSelect,modifier=Modifier.fillMaxWidth().testTag("route-option:${option.id}").semantics { this.selected=isRouteSelected;role=Role.RadioButton },border=BorderStroke(if(selected) 1.5.dp else 1.dp,if(selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant),colors=CardDefaults.cardColors(containerColor=MaterialTheme.colorScheme.surfaceContainer)) { Column(Modifier.padding(16.dp),verticalArrangement=Arrangement.spacedBy(6.dp)) {
         if(fastest) Text("Fastest complete route",style=MaterialTheme.typography.labelMedium,color=MaterialTheme.colorScheme.primary)
-        Text(option.estimate.totalMinutes?.let { "$it min" } ?: "${option.rideMinutes} min on board",style=MaterialTheme.typography.headlineSmall)
+        Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically) {
+            Text(option.estimate.totalMinutes?.let { "$it min" } ?: "${option.rideMinutes} min on board",Modifier.weight(1f),style=MaterialTheme.typography.headlineMedium)
+            Icon(if(selected) Icons.Outlined.RadioButtonChecked else Icons.Outlined.RadioButtonUnchecked,null,tint=if(selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
+        }
         if(option.estimate.totalMinutes==null) Text("Walking time unavailable",style=MaterialTheme.typography.bodySmall)
         Text(if(option.parts.isNotEmpty()) "Rail + MyCiTi" else "${option.board} → ${option.alight}",style=MaterialTheme.typography.bodyMedium)
         option.rail?.takeIf { it.transfers>0 }?.let { journey -> Text("${journey.transfers} ${if(journey.transfers==1) "change" else "changes"} · ${journey.legs.drop(1).joinToString { it.departure.name }}",style=MaterialTheme.typography.bodySmall) }

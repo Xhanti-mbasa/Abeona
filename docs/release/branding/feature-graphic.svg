@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="500" viewBox="0 0 1024 500">
+<rect width="1024" height="500" fill="#171C20"/>
+<path d="M744 336L801 222Q819 186 837 222L894 336M768 291L870 291" fill="none" stroke="#D8ED9A" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="744" cy="336" r="12" fill="#D8ED9A"/><circle cx="894" cy="336" r="12" fill="#D8ED9A"/>
+<text x="78" y="231" fill="#F4F6F2" font-family="DejaVu Sans,sans-serif" font-size="72" font-weight="600">Abeona</text>
+<text x="80" y="284" fill="#AFBBB5" font-family="DejaVu Sans,sans-serif" font-size="25">A calmer way to plan your journey.</text>
+</svg>

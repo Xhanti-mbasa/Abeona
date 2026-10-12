@@ -30,6 +30,6 @@ Abeona is not affiliated with PRASA/Metrorail, CT Trains, MyCiTi or Golden Arrow
 
 Use actual device captures from the verified release candidate: Home dark, Home light, route results, active directions, Saved places and Journeys. Use accurate captions such as “Choose your station” and “Scheduled routes, clearly compared.” Do not substitute the design concept or present fixture timetables as live service evidence. Final screenshots must be inspected for system overlays, sample personal data, clipped text and matching app version.
 
-Feature graphic/icon: provide the final Abeona brand assets in the required Console dimensions. The retained train launcher icon is functional but has not been approved as the final brand mark. Verify current Console graphic requirements before uploading.
+Feature graphic/icon: `branding/app-icon.png` (512 × 512) and `branding/feature-graphic.png` (1024 × 500) are supplied with editable SVG sources. The adaptive launcher uses the same graphite/citron route-shaped A; Android themed icons are supported. Notification icons use a separate transparent, monochrome train silhouette. Graphic files require normal listing review and current Console validation before uploading.
 
 Support email, website, privacy URL, publisher details, content rating, target audience and countries remain publisher decisions. This draft contains no AI credit; that credit is repository-only.

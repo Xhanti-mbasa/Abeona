@@ -94,7 +94,7 @@ internal fun shareText(context: android.content.Context,text: String) { context.
         OutlinedTextField(password,{ password=it.take(256) },label={ Text("Backup password · at least 10 characters") },visualTransformation=PasswordVisualTransformation(),singleLine=true,modifier=Modifier.fillMaxWidth())
         Toggle("Keep this file updated","Keep the password encrypted on this installation and update the file as local data changes. Remember the password for reinstalling.",automatic) { automatic=it }
         FlowRow(horizontalArrangement=Arrangement.spacedBy(8.dp)) {
-            OutlinedButton(onClick={ create.launch("CTTrains-profile.ctprofile") },enabled=password.length>=10 && !s.busy) { Text("Save backup") }
+            OutlinedButton(onClick={ create.launch("Abeona-profile.ctprofile") },enabled=password.length>=10 && !s.busy) { Text("Save backup") }
             OutlinedButton(onClick={ open.launch(arrayOf("application/octet-stream","application/json","*/*")) },enabled=password.length>=10 && !s.busy) { Text("Restore file") }
             TextButton(onClick={ m.pauseBackup() }) { Text("Pause auto backup") }
         }

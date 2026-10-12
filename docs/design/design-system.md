@@ -30,3 +30,7 @@ Light and dark share component sizes, hierarchy and semantic states. Existing op
 ## Verification
 
 Actual emulator captures, accessibility checks, source comparisons and unresolved visual findings belong in the root design-qa.md. Store screenshots must come from the built app; the approved image is a design concept and cannot be used as evidence of functionality.
+
+## Brand assets
+
+The launcher uses a route-shaped A, with endpoints recalling two stops, in citron on graphite. Its geometry has adaptive-mask safe margins and a themed monochrome layer. Editable store SVG/PNG assets live in docs/release/branding. Notification icons use a transparent monochrome train silhouette; the launcher background is never used as a small notification icon.

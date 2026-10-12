@@ -181,9 +181,13 @@ jobs:
             target: google_apis
             page_size: 4096
           - distribution: play
-            api: 35
+            api: 36
             target: google_apis_ps16k
             page_size: 16384
+          - distribution: play
+            api: 35
+            target: google_apis
+            page_size: 4096
     steps:
       - uses: actions/checkout@v4
         with:
@@ -216,7 +220,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: android-device-reports-${{ matrix.distribution }}
+          name: android-device-reports-${{ matrix.distribution }}-${{ matrix.api }}-${{ matrix.page_size }}
           path: |
             apps/android/app/build/reports/androidTests/connected/
             apps/android/app/build/outputs/androidTest-results/connected/

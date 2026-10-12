@@ -74,7 +74,7 @@ class TrainViewModel(application: Application) : AndroidViewModel(application) {
                 MapEngine.mode(mapMode)
                 val visiblePreferences = preferences.copy(mapMode = mapMode)
                 if (repository.sources.none { it.id == preferences.sourceId }) {
-                    repository.updatePreferences { it.copy(sourceId = "cttrains-web") }
+                    repository.updatePreferences { it.copy(sourceId = "cttrains-api") }
                     return@collect
                 }
                 mutableState.update { current ->
@@ -92,7 +92,7 @@ class TrainViewModel(application: Application) : AndroidViewModel(application) {
             mutableState.update { it.copy(catalog = initial) }
             try {
                 val requestedSource = repository.preferences.first().sourceId
-                val current = repository.refreshCatalog(if (repository.sources.any { it.id == requestedSource }) requestedSource else "cttrains-web")
+                val current = repository.refreshCatalog(if (repository.sources.any { it.id == requestedSource }) requestedSource else "cttrains-api")
                 mutableState.update { it.copy(catalog = current, stationNotice = null) }
             } catch (error: Exception) {
                 if (error is kotlinx.coroutines.CancellationException) throw error

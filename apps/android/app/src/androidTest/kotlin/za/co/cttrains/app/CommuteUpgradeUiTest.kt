@@ -45,6 +45,8 @@ class CommuteUpgradeUiTest {
         runBlocking { features.store.update { it.copy(routines=listOf(r)) } }
         app.waitUntil(15000) { features.state.value.extras.routines.size==1 }
         app.onNodeWithTag("nav:upcoming").performClick()
+        app.waitUntil(15000) { app.onAllNodesWithTag("upcoming-journeys").fetchSemanticsNodes().isNotEmpty() }
+        app.onNodeWithTag("upcoming-journeys").performScrollToNode(hasText("Edit recurrence"))
         app.onNodeWithText("Edit recurrence").performScrollTo().performClick()
         app.onNodeWithTag("repeat-day:6").performClick()
         app.onNodeWithTag("save-routine").performScrollTo().performClick()

@@ -6,10 +6,10 @@ const path = require('node:path');
 const express = require('express');
 const { createMobileRouter } = require('../routes/mobile');
 const fixture = name => fs.readFileSync(path.join(__dirname, '../../../../fixtures/providers/html', `${name}.html`), 'utf8');
-async function server(t, schedule = fixture('transfer')) {
+async function server(t, schedule = fixture('transfer'), cacheStore=null) {
   const entries = new Map(); let timetableCalls = 0;
-  const router = createMobileRouter({ currentDate: () => '2026-10-01', cacheStore: { get: async key => entries.get(key), set: async (key, value) => entries.set(key, value) },
-    readPage: async url => { if (url.endsWith('train-form.php')) return fixture('catalog'); timetableCalls++; return schedule; } });
+  const router = createMobileRouter({ currentDate: () => '2026-10-01', cacheStore: cacheStore||{ get: async key => entries.get(key), set: async (key, value) => entries.set(key, value) },
+    readPage: async url => { if (url.endsWith('train-form.php')) return fixture('catalog'); timetableCalls++; return typeof schedule==='function'?schedule():schedule; } });
   const app = express(); app.use('/mobile/v1', router);
   const instance = await new Promise(resolve => { const s = app.listen(0, '127.0.0.1', () => resolve(s)); });
   t.after(() => new Promise(resolve => { instance.closeAllConnections(); instance.close(resolve); }));
@@ -35,4 +35,14 @@ test('HTTP returns an upstream error for unfamiliar markup, not a false empty ti
   const service = await server(t, '<h1>Website moved</h1>');
   const response = await service.get('/journeys?from=Unibell&to=Salt%20River&date=2026-10-01&time=07:00');
   assert.equal(response.status, 502); assert.ok((await response.json()).error);
+});
+test('common rail endpoint preserves compatibility payload and shares its cached source request',async t=>{
+ const service=await server(t),query='?from=Unibell&to=Salt%20River&date=2026-10-01&time=07:00';
+ const original=await (await service.get('/journeys'+query)).json(),common=await (await service.get('/normalized/journeys'+query)).json();
+ assert.equal(common.contractVersion,1);assert.equal(common.provider,'PRASA');assert.equal(common.schedules[0].legs.length,original.journeys[0].legs.length);assert.equal(common.provenance.fetchedAt,original.fetchedAt);assert.equal(common.provenance.cached,true);assert.equal(service.calls(),1);
+});
+test('expired rail result remains available during an outage with its original check time',async t=>{
+ let clock=Date.now(),offline=false;const {MemoryCache}=require('../utils/cache');const cache=new MemoryCache({clock:()=>clock});
+ const service=await server(t,()=>{if(offline) throw new Error('offline');return fixture('transfer');},cache),url='/journeys?from=Unibell&to=Salt%20River&date=2026-10-01&time=07:00';
+ const original=await (await service.get(url)).json();clock+=7200000;offline=true;const response=await service.get(url);assert.equal(response.status,200);const retained=await response.json();assert.equal(retained.fetchedAt,original.fetchedAt);assert.deepEqual(retained.journeys,original.journeys);assert.equal(retained.provenance.cached,true);assert.equal(retained.provenance.sourceAvailable,false);
 });
