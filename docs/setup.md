@@ -8,7 +8,7 @@
 | packages/transit-core | Pure Kotlin parsing, routing, station choices, fares, recurrence and guidance contracts; shared with JVM scraper workers |
 | services/api | Existing Node 22/Express API, compatibility endpoints and normalized mobile endpoints |
 | packages/provider-connectors | Provider inventory/capabilities, bounded CT Trains fetches, host gates and request coalescing |
-| packages/contracts | Versioned data provenance semantics |
+| packages/contracts | Common normalized route/stop/schedule/fare/disruption schema and provider provenance |
 | workers/scrapers | JVM MyCiTi/Golden Arrow extraction and published rail alerts; PDFBox remains backend only |
 | fixtures/providers/html | Captured source pages shared by Kotlin, Node and Android test assets |
 | infra | Docker images and private worker/Redis deployment configuration |

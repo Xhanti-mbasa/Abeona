@@ -35,6 +35,7 @@ class CommuteUpgradeUiTest {
         app.waitUntil(15000) { features.state.value.extras.spots.single().note=="Salt River" }
         assertEquals("test-home",features.state.value.extras.spots.single().id)
         assertEquals("Unibell",features.state.value.extras.spots.single().preferredStation)
+        app.waitUntil(10000) { features.state.value.message==null };app.waitForIdle();UiScreenshots.save("abeona-saved-places")
         app.onAllNodesWithText("To here")[0].performScrollTo().performClick()
         app.waitUntil(15000) { features.state.value.destination?.id=="spot:test-home" }
         assertEquals("Unibell",features.state.value.arrivalStation)

@@ -195,7 +195,7 @@ class TrainViewModel(application: Application) : AndroidViewModel(application) {
             mutableState.update { it.copy(alertsLoading = true, alertsError = null) }
             try {
                 val snapshot = repository.refreshAlerts()
-                mutableState.update { it.copy(alerts = snapshot, alertsLoading = false, alertsOffline = false) }
+                mutableState.update { it.copy(alerts = snapshot, alertsLoading = false, alertsOffline = snapshot.provenance?.cached==true || snapshot.provenance?.sourceAvailable==false) }
             } catch (error: Exception) {
                 if (error is kotlinx.coroutines.CancellationException) throw error
                 val saved = state.value.alerts?.takeIf { ServiceAlerts.usable(it, System.currentTimeMillis()) }

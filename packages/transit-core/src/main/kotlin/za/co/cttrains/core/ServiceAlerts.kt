@@ -12,7 +12,7 @@ import org.jsoup.Jsoup
 data class ServiceAlert(val id: String, val group: String, val message: String, val reportedAt: Long,
     val time: String, val kind: String, val trains: List<String>)
 @Serializable
-data class AlertSnapshot(val sourceDate: String, val fetchedAt: Long, val alerts: List<ServiceAlert>)
+data class AlertSnapshot(val sourceDate: String, val fetchedAt: Long, val alerts: List<ServiceAlert>,val provenance: DataProvenance?=null)
 data class PlatformNotice(val train: String, val station: String, val platform: String, val reportedAt: Long)
 
 object ServiceAlerts {

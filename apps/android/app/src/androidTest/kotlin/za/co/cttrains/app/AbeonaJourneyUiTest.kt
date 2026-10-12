@@ -62,7 +62,9 @@ class AbeonaJourneyUiTest {
         app.onNodeWithTag("saved-addresses").performScrollToNode(hasTestTag("add-custom-place"))
         app.onNodeWithTag("add-custom-place").performClick()
         app.onNodeWithText("Search places, stations or stops").performTextInput("Salt River");app.onNodeWithTag("place-choice:station:saltriver").performScrollTo().performClick()
-        app.onNodeWithText("Place name").performTextInput("Evening class");app.onNodeWithText("Save address").performClick()
+        app.onNodeWithText("Place name").performTextInput("Home")
+        app.onNodeWithText("Save address").assertIsNotEnabled()
+        app.onNodeWithText("Place name").performTextReplacement("Evening class");app.onNodeWithText("Save address").performClick()
         app.waitUntil(15000) { features.state.value.extras.spots.any { it.name=="Evening class" } }
         val saved=features.state.value.extras.spots.first { it.name=="Evening class" }
         app.activityRule.scenario.recreate()

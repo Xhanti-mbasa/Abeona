@@ -48,10 +48,11 @@ fun AlertsScreen(state: TrainState, model: TrainViewModel) {
         }
         if (state.alertsLoading) item { LinearProgressIndicator(Modifier.fillMaxWidth()); Text("Refreshing alerts…", style = MaterialTheme.typography.labelSmall) }
         if (snapshot != null) item {
-            Surface(color = if (state.alertsOffline || snapshot.sourceDate != LocalDate.now(CapeTownZone).toString()) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.surfaceContainer, shape = MaterialTheme.shapes.medium) {
+            Surface(color = if (snapshot.provenance?.sourceAvailable==false || state.alertsError!=null || snapshot.sourceDate != LocalDate.now(CapeTownZone).toString()) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.surfaceContainer, shape = MaterialTheme.shapes.medium) {
                 Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text("Report date: ${snapshot.sourceDate}", fontWeight = FontWeight.Bold)
-                    Text("${if (state.alertsOffline) "Saved snapshot · refresh unavailable" else "Last fetched"} ${AlertDate.format(Instant.ofEpochMilli(snapshot.fetchedAt))}", style = MaterialTheme.typography.bodySmall)
+                    Text("${if (state.alertsOffline) "Cached snapshot · original check" else "Last fetched"} ${AlertDate.format(Instant.ofEpochMilli(snapshot.fetchedAt))}", style = MaterialTheme.typography.bodySmall)
+                    if(snapshot.provenance?.sourceAvailable==false) Text("Source unavailable · showing saved updates",style=MaterialTheme.typography.bodySmall)
                     if (snapshot.sourceDate != LocalDate.now(CapeTownZone).toString()) Text("These reports are from another date. They do not describe today's service.", style = MaterialTheme.typography.bodySmall)
                 }
             }
