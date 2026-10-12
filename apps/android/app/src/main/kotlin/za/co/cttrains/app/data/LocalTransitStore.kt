@@ -86,8 +86,8 @@ class LocalTransitStore private constructor(private val context: Context) {
         withContext(Dispatchers.IO) {
             if (dao.value("profile") == null) {
                 val old = context.legacyTrainPreferences.data.first()
-                val prefs = runCatching { json.decodeFromString<Preferences>(old[stringPreferencesKey("preferences")].orEmpty()) }.getOrDefault(Preferences())
-                val cache = runCatching { json.decodeFromString<List<CachedSearch>>(old[stringPreferencesKey("search_cache")].orEmpty()) }.getOrDefault(emptyList())
+                val prefs = old[stringPreferencesKey("preferences")]?.let { raw -> json.decodeFromString<Preferences>(raw) } ?: Preferences()
+                val cache = old[stringPreferencesKey("search_cache")]?.let { raw -> json.decodeFromString<List<CachedSearch>>(raw) } ?: emptyList()
                 val catalog = old[stringPreferencesKey("catalog")]
                 database.withTransaction {
                     val source = if (old[stringPreferencesKey("preferences")] == null && BuildConfig.TRANSIT_BASE_URL.isNotBlank()) "cttrains-api" else prefs.sourceId

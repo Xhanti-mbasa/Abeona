@@ -14,7 +14,7 @@ import za.co.cttrains.app.ui.OfflineStationMap
 import za.co.cttrains.core.*
 
 /** Draw the encrypted itinerary, rather than depending on a surviving planner screen. */
-@Composable fun DirectionsMapScreen(train: TrainState,model: TrainViewModel,features: FeatureState,onClose: ()->Unit) {
+@Composable fun DirectionsMapScreen(train: TrainState,model: TrainViewModel,features: FeatureState,onClose: ()->Unit,compact: Boolean=false) {
     val directions by DirectionsRuntime.state.collectAsStateWithLifecycle()
     val downloads by model.offlineMaps.state.collectAsStateWithLifecycle()
     val plan=directions.preview ?: directions.session?.plan
@@ -34,19 +34,19 @@ import za.co.cttrains.core.*
     val region=downloads.regions.firstOrNull { it.id==train.preferences.offlineMapId && it.complete } ?: downloads.regions.firstOrNull { it.complete }
     val streets=train.mapsReady && train.preferences.mapMode!="stations" && !failed && (train.preferences.mapMode=="online" || region!=null)
     val mapState=train.copy(stations=emptyList(),selectedJourney=null,routeTrace=null,from="",to="")
-    Column(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing).testTag("directions-map")) {
-        Row(Modifier.fillMaxWidth().padding(horizontal=12.dp),verticalAlignment=Alignment.CenterVertically) {
+    Column(Modifier.fillMaxSize().then(if(compact) Modifier else Modifier.windowInsetsPadding(WindowInsets.safeDrawing)).testTag("directions-map")) {
+        if(!compact) Row(Modifier.fillMaxWidth().padding(horizontal=12.dp),verticalAlignment=Alignment.CenterVertically) {
             Text(plan?.title ?: "Journey map",style=MaterialTheme.typography.titleSmall,modifier=Modifier.weight(1f),maxLines=2)
             TextButton(onClick=onClose) { Text("Close map") }
         }
-        Text(directions.guidance?.title ?: "Saved journey · tap a numbered stop for details",style=MaterialTheme.typography.labelMedium,modifier=Modifier.padding(horizontal=12.dp))
+        if(!compact) Text(directions.guidance?.title ?: "Saved journey · tap a numbered stop for details",style=MaterialTheme.typography.labelMedium,modifier=Modifier.padding(horizontal=12.dp))
         Box(Modifier.weight(1f).fillMaxWidth()) {
             if(streets) key(plan?.id,train.preferences.mapMode,retry) {
-                StreetMap(mapState,if(train.preferences.mapMode=="offline") model.offlineMaps.definition(region?.id) else null,viewport,emptyList(),{}, {},{ failed=true },Modifier.fillMaxSize(),features.extras.beta.mapStyle,layers,{ selected=it })
+                StreetMap(mapState,if(train.preferences.mapMode=="offline") model.offlineMaps.definition(region?.id) else null,viewport,emptyList(),{}, {},{ failed=true },Modifier.fillMaxSize(),if(androidx.compose.material3.MaterialTheme.colorScheme.background == androidx.compose.ui.graphics.Color(0xFF171C20)) "dark" else "light",layers,{ selected=it })
             } else OfflineStationMap(emptyList(),null,null,viewport,emptyList(),train.currentPosition,"","",{}, {},layers,{ selected=it },{})
             if(failed) TextButton(onClick={ failed=false;retry++ },modifier=Modifier.align(Alignment.TopEnd)) { Text("Retry map") }
         }
-        Text("Transit links are approximate. Walks follow cached routed paths. Offline imagery needs a downloaded map.",style=MaterialTheme.typography.labelSmall,modifier=Modifier.padding(12.dp))
+        if(!compact) Text("Transit links are approximate. Walks follow cached routed paths. Offline imagery needs a downloaded map.",style=MaterialTheme.typography.labelSmall,modifier=Modifier.padding(12.dp))
     }
     selected?.let { pin->AlertDialog(onDismissRequest={ selected=null },title={ Text(pin.name) },text={ Text(pin.detail) },confirmButton={ TextButton(onClick={ selected=null }) { Text("Done") } }) }
 }
