@@ -230,7 +230,7 @@ import za.co.cttrains.core.*
 }
 
 @Composable private fun JourneyPlaceField(label: String,value: String,onClick: ()->Unit) {
-    OutlinedCard(onClick=onClick,modifier=Modifier.fillMaxWidth()) { Column(Modifier.padding(14.dp)) { Text(label,style=MaterialTheme.typography.labelSmall);Text(value,style=MaterialTheme.typography.bodyLarge) } }
+    OutlinedCard(onClick=onClick,modifier=Modifier.fillMaxWidth().testTag("journey-place:$label")) { Column(Modifier.padding(14.dp)) { Text(label,style=MaterialTheme.typography.labelSmall);Text(value,style=MaterialTheme.typography.bodyLarge) } }
 }
 
 @Composable internal fun JourneyPlacePicker(train: TrainState,model: TrainViewModel,s: FeatureState,m: FeatureViewModel,start: Boolean,onDismiss: ()->Unit,onSelect: (WalkEndpoint)->Unit) {

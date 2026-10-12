@@ -189,11 +189,11 @@ private fun AboutScreen(state: TrainState, model: TrainViewModel,feature: za.co.
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp).widthIn(max = 700.dp), verticalArrangement = Arrangement.spacedBy(20.dp)) {
         Text("Your app, your data", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
         Notice("An independent, community app for Cape Town rail commuters. Timetables come from CT Trains. This app is not affiliated with CT Trains, PRASA or Metrorail.", Icons.Outlined.Train)
-        FeatureStatus(feature)
         FilledTonalButton(onClick=onDirections,modifier=Modifier.fillMaxWidth()) { Text("Journey directions & Live Updates") }
         OutlinedButton(onClick=onUpdates,modifier=Modifier.fillMaxWidth()) { Text("App updates") }
         OutlinedButton(onClick=model::openMap,modifier=Modifier.fillMaxWidth()) { Icon(Icons.Outlined.Map,null);Spacer(Modifier.width(8.dp));Text("Explore transport map") }
         BetaSettings(feature,features,onBuses,onTrips,onCommunity,onWhatsApp)
+        FeatureStatus(feature)
         ProfileSettings(feature,features)
         HostedSettings(feature,features)
         Card(shape = RoundedCornerShape(24.dp)) {
@@ -261,6 +261,6 @@ internal fun SourceSelector(state: TrainState, model: TrainViewModel) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             model.repository.sources.forEach { source -> FilterChip(selected = state.preferences.sourceId == source.id, onClick = { model.setSource(source.id) }, label = { Text(source.label) }) }
         }
-        Text(if (model.repository.sources.size > 1) "The API and direct source both use CT Trains. Results stay separate; switching clears the current result." else "Community timetable from CT Trains. Check source and fetch date before travelling.", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text("Scheduled rail information from CT Trains through Abeona. Saved results retain their original source and check time.", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }

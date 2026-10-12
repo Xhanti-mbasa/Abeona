@@ -41,10 +41,15 @@ class AbeonaJourneyUiTest {
         app.onNodeWithTag("place-choice:station:saltriver").performScrollTo().performClick()
         app.waitUntil(20000) { app.onAllNodesWithTag("start-selected-journey").fetchSemanticsNodes().isNotEmpty() }
         app.onNodeWithText("Your routes").assertIsDisplayed();app.onNodeWithTag("start-selected-journey").assertIsDisplayed();UiScreenshots.save("abeona-results-dark")
-        app.onNodeWithTag("start-selected-journey").performClick();app.onNodeWithTag("directions-screen").assertIsDisplayed();app.onNodeWithTag("nav:plan").assertDoesNotExist();UiScreenshots.save("abeona-guidance-preview-dark")
+        app.onNodeWithTag("start-selected-journey").performClick()
+        app.waitUntil(15000) { app.onAllNodesWithTag("directions-screen").fetchSemanticsNodes().isNotEmpty() }
+        app.onNodeWithTag("directions-screen").assertIsDisplayed();app.onNodeWithTag("nav:plan").assertDoesNotExist();UiScreenshots.save("abeona-guidance-preview-dark")
     }
     @Test fun customPlaceConfirmationAndRestartPreserveIdentity() {
-        app.onNodeWithTag("nav:saved").performClick();app.onNodeWithTag("add-custom-place").performScrollTo().performClick()
+        app.onNodeWithTag("nav:saved").performClick()
+        app.waitUntil(15000) { app.onAllNodesWithTag("saved-addresses").fetchSemanticsNodes().isNotEmpty() }
+        app.onNodeWithTag("saved-addresses").performScrollToNode(hasTestTag("add-custom-place"))
+        app.onNodeWithTag("add-custom-place").performClick()
         app.onNodeWithText("Search places, stations or stops").performTextInput("Salt River");app.onNodeWithTag("place-choice:station:saltriver").performScrollTo().performClick()
         app.onNodeWithText("Place name").performTextInput("Evening class");app.onNodeWithText("Save address").performClick()
         app.waitUntil(15000) { features.state.value.extras.spots.any { it.name=="Evening class" } }

@@ -38,41 +38,6 @@ class DirectionsUpdatesUiTest {
         if(Build.VERSION.SDK_INT>=33) shell.grantRuntimePermission(app.activity.packageName,Manifest.permission.POST_NOTIFICATIONS)
     }
     @After fun cleanup() { DirectionsService.stop(app.activity);UpdateWork.reset(app.activity) }
-    @Test fun liveNotificationUsesNavigationTemplateAndDemotionIsRespected() {
-        val c=app.activity;DirectionsNotifications.channels(c)
-        val s=DirectionsSession(plan(),startedAt=System.currentTimeMillis())
-        val g=DirectionsEngine.guidance(s,null,System.currentTimeMillis())
-        val n=DirectionsNotifications.build(c,s,g)
-        assertEquals(Notification.CATEGORY_NAVIGATION,n.category)
-        assertTrue(n.flags and Notification.FLAG_ONGOING_EVENT!=0)
-        assertTrue(n.extras.getBoolean("android.requestPromotedOngoing"))
-        assertEquals(Notification.VISIBILITY_PRIVATE,n.visibility)
-        assertNull(n.contentView);assertFalse(n.extras.getBoolean(Notification.EXTRA_COLORIZED))
-        assertEquals(listOf("Pause","Next step","Stop"),n.actions.map { it.title.toString() })
-        if(Build.VERSION.SDK_INT>=36) assertEquals(Notification.ProgressStyle::class.java.name,n.extras.getString(Notification.EXTRA_TEMPLATE))
-        assertFalse(DirectionsNotifications.build(c,s.copy(promote=false),g).extras.getBoolean("android.requestPromotedOngoing"))
-        assertFalse(DirectionsNotifications.build(c,s.copy(paused=true),g).extras.getBoolean("android.requestPromotedOngoing"))
-    }
-    @Test fun activeDirectionsRequireBoardingConfirmationAndCanPauseResumeAndStop() {
-        val p=plan()
-        app.runOnUiThread { DirectionsRuntime.state.value=DirectionsState(preview=p);ViewModelProvider(app.activity)[TrainViewModel::class.java].openDirections() }
-        app.onNodeWithTag("begin-directions").performScrollTo().performClick()
-        app.waitUntil(15000) { DirectionsRuntime.state.value.running }
-        app.waitUntil(15000) { app.activity.getSystemService(NotificationManager::class.java).activeNotifications.any { it.id==DirectionsNotifications.ID } }
-        assertEquals(0,DirectionsRuntime.state.value.session!!.index)
-        app.onNodeWithTag("directions-next").performScrollTo().assertTextContains("I’ve boarded").performClick()
-        app.waitUntil(15000) { DirectionsRuntime.state.value.session?.index==1 }
-        app.onNodeWithText("Pause",substring=false).performScrollTo().performClick()
-        app.waitUntil(15000) { DirectionsRuntime.state.value.session?.paused==true }
-        assertEquals(1,DirectionsStore(app.activity).load()!!.index)
-        UiScreenshots.save("active-directions-paused")
-        app.onNodeWithText("Resume GPS").performScrollTo().performClick()
-        app.waitUntil(15000) { DirectionsRuntime.state.value.session?.paused==false }
-        app.onNodeWithTag("directions-stop").performScrollTo().performClick()
-        app.onNodeWithTag("confirm-stop-journey").performClick()
-        app.waitUntil(15000) { !DirectionsRuntime.state.value.running && DirectionsRuntime.state.value.session==null }
-        app.waitUntil(15000) { app.activity.getSystemService(NotificationManager::class.java).activeNotifications.none { it.id==DirectionsNotifications.ID } }
-    }
     @Test fun updatesAndNowBarGuidesAreAccessibleWithoutAnyAccountOrDownload() {
         app.runOnUiThread { ViewModelProvider(app.activity)[TrainViewModel::class.java].openAppUpdates() }
         app.onNodeWithTag("app-updates-screen").assertIsDisplayed()
@@ -87,22 +52,6 @@ class DirectionsUpdatesUiTest {
         app.onNodeWithText("Notification settings").performClick()
         app.onNodeWithText("Notification settings").assertIsDisplayed()
         UiScreenshots.save("live-update-now-bar-setup")
-    }
-    @Test fun savedDirectionsMapDoesNotRequirePlannerStateOrOnlineImagery() {
-        val vm=ViewModelProvider(app.activity)[TrainViewModel::class.java]
-        app.runOnUiThread {
-            vm.setMapMode("stations")
-            vm.selectJourney(null)
-            DirectionsRuntime.state.value=DirectionsState(preview=plan())
-            vm.openDirections()
-        }
-        app.onNodeWithContentDescription("Journey options").performClick()
-        app.onNodeWithText("View full map").performClick()
-        app.onNodeWithTag("directions-map").assertIsDisplayed()
-        app.onNodeWithText("Work → Home").assertIsDisplayed()
-        UiScreenshots.save("restored-directions-map-offline")
-        app.onNodeWithText("Close map").performClick()
-        app.onNodeWithTag("directions-screen").assertIsDisplayed()
     }
     @Test fun apkVerifierRejectsCorruptedPayloadAndUpdateCredentialsAreEncrypted() {
         val c=app.activity

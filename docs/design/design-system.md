@@ -2,6 +2,8 @@
 
 Approved direction: graphite and pale citron, selected after the first three concepts were rejected. The native implementation uses Kotlin, Compose Material 3 and MapLibre. The image contains illustrative journey data; production routes never use those example values.
 
+![Approved graphite and citron concept](approved-direction.webp)
+
 ## Foundations
 
 | Role | Dark | Light |

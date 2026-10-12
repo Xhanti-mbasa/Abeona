@@ -172,6 +172,18 @@ jobs:
   device:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - distribution: github
+            api: 36
+            target: google_apis
+            page_size: 4096
+          - distribution: play
+            api: 35
+            target: google_apis_ps16k
+            page_size: 16384
     steps:
       - uses: actions/checkout@v4
         with:
@@ -193,18 +205,18 @@ jobs:
       - name: Native storage, timetable, backup and settings tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 36
+          api-level: ${{ matrix.api }}
           arch: x86_64
-          target: google_apis
+          target: ${{ matrix.target }}
           profile: pixel_2
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          script: bash apps/android/scripts/check-device.sh
+          script: bash apps/android/scripts/check-device.sh ${{ matrix.distribution }} ${{ matrix.page_size }}
       - name: Upload native test reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: android-device-reports
+          name: android-device-reports-${{ matrix.distribution }}
           path: |
             apps/android/app/build/reports/androidTests/connected/
             apps/android/app/build/outputs/androidTest-results/connected/

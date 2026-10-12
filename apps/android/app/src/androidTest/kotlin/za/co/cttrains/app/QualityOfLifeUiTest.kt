@@ -85,8 +85,8 @@ class QualityOfLifeUiTest {
         app.onNodeWithText("Mode of transport · Trains").performScrollTo().performClick()
         app.onNodeWithText("MyCiTi").performClick()
         app.onNodeWithText("Find MyCiTi routes").performScrollTo().assertIsDisplayed()
-        app.onNodeWithText("Unibell").performScrollTo().assertIsDisplayed()
-        app.onNodeWithText("Salt River").assertIsDisplayed()
+        app.onNodeWithTag("journey-place:From").performScrollTo().assertTextContains("Unibell")
+        app.onNodeWithTag("journey-place:To").performScrollTo().assertTextContains("Salt River")
         app.onNodeWithText("Mode of transport · MyCiTi").performScrollTo().performClick()
         app.onNodeWithText("Golden Arrow").performClick()
         app.onNodeWithText("Find Golden Arrow routes").performScrollTo().assertIsDisplayed()
@@ -98,8 +98,8 @@ class QualityOfLifeUiTest {
         val image=app.onRoot().captureToImage()
         val file=java.io.File(app.activity.getExternalFilesDir(null),"ui-screenshots/planner-compare.png").apply { parentFile!!.mkdirs() }
         file.outputStream().use { image.asAndroidBitmap().compress(android.graphics.Bitmap.CompressFormat.PNG,100,it) }
-        app.onNodeWithText("Unibell").performScrollTo().assertIsDisplayed()
-        app.onNodeWithText("Salt River").assertIsDisplayed()
+        app.onNodeWithTag("journey-place:From").performScrollTo().assertTextContains("Unibell")
+        app.onNodeWithTag("journey-place:To").performScrollTo().assertTextContains("Salt River")
         app.runOnUiThread { features.beta { it.copy(journeyFocus=false,myCiti=false,goldenArrow=false) } }
     }
     @Test fun whatsAppAlphaIsDiscoverableAndHasNoDirectPhoneAccountAccess() {

@@ -90,7 +90,7 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.9.0")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.9.0")
-    implementation("androidx.datastore:datastore-preferences:1.1.4")
+    implementation("androidx.datastore:datastore-preferences:1.2.1")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("org.jsoup:jsoup:1.18.3")
     implementation("androidx.credentials:credentials:1.5.0")

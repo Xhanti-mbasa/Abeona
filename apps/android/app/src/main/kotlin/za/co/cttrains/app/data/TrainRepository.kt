@@ -39,7 +39,7 @@ class TrainRepository(private val context: Context) {
     private val json = Json { ignoreUnknownKeys = true }
     private val client = OkHttpClient.Builder().connectTimeout(15, TimeUnit.SECONDS)
         .readTimeout(20, TimeUnit.SECONDS).callTimeout(25, TimeUnit.SECONDS).build()
-    val sources=listOf(TransitSource("cttrains-api","Abeona backend","Scheduled transit data through the configured server"),TransitSource("cttrains-web","Saved legacy searches","Previously saved CT Trains data; refreshes use the backend"))
+    val sources=listOf(TransitSource("cttrains-api","Abeona backend","Scheduled transit data through the configured server"))
     val preferences = flow { store.initialize(); emitAll(store.preferences) }
     suspend fun updatePreferences(transform: (Preferences) -> Preferences) = store.updatePreferences(transform)
     suspend fun bundledCatalog(): StationCatalog = withContext(Dispatchers.IO) {
@@ -57,7 +57,7 @@ class TrainRepository(private val context: Context) {
         .addQueryParameter("fromStation", query.from).addQueryParameter("toStation", query.to)
         .addQueryParameter("travelDate", query.websiteDate).addQueryParameter("departureTime", query.time).build().toString()
     suspend fun search(query: SearchQuery, sourceId: String): SearchResult {
-        require(sources.any { it.id == sourceId }) { "This transit source is unavailable." }
+        require(sourceId in setOf("cttrains-api","cttrains-web")) { "This transit source is unavailable." }
         try {
             require(BuildConfig.TRANSIT_BASE_URL.isNotBlank()) { "The transit backend is not configured. Saved journeys remain available." }
             val url="${BuildConfig.TRANSIT_BASE_URL}/mobile/v1/journeys".toHttpUrl().newBuilder().addQueryParameter("from",query.from).addQueryParameter("to",query.to).addQueryParameter("date",query.date).addQueryParameter("time",query.time).build().toString()

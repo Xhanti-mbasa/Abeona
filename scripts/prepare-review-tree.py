@@ -13,7 +13,9 @@ for path,(mode,sha) in current.items():
  if base.get(path)==(mode,sha): continue
  value={'path':path,'mode':mode,'type':'blob'}
  if sha in known: value['sha']=sha
- else: value['content']=pathlib.Path(path).read_text()
+ else:
+  try: value['content']=pathlib.Path(path).read_text()
+  except UnicodeDecodeError: value['sha']=sha  # Upload this exact binary blob before creating the tree.
  entries.append(value)
 pathlib.Path('/tmp/abeona-tree.json').write_text(json.dumps({'base':subprocess.check_output(['git','rev-parse','HEAD^{tree}']).decode().strip(),'parent':subprocess.check_output(['git','rev-parse','HEAD']).decode().strip(),'entries':entries}))
 print(len(entries),'tree changes prepared')
