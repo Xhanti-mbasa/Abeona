@@ -67,7 +67,7 @@ fun UpcomingScreen(state: TrainState, model: TrainViewModel) {
                 Text("${routine.origin?.label ?: routine.query.from} → ${routine.destination?.label ?: routine.query.to} · ${routine.query.time}")
                 Text(routine.days.sorted().joinToString { RoutineDayLabels[it-1] },style=MaterialTheme.typography.labelLarge)
                 FlowRow(horizontalArrangement=Arrangement.spacedBy(6.dp)) {
-                    TextButton(onClick={ repeatEdit=routine }) { Text("Edit recurrence") }
+                    TextButton(onClick={ repeatEdit=routine },modifier=Modifier.testTag("routine-edit:${routine.id}")) { Text("Edit recurrence") }
                     TextButton(onClick={
                         val date=CommuteRoutines.dates(routine.copy(enabled=true),now).firstOrNull()?.toString() ?: java.time.LocalDate.now(CapeTownZone).toString()
                         features.plannerMode(routine.service)

@@ -200,7 +200,7 @@ import za.co.cttrains.core.*
                 Text("Comparison starts at the same leave-after time and includes walks, waiting and a five-minute boarding buffer. Without a mapped walk, the door-to-door time stays unknown.",style=MaterialTheme.typography.bodySmall)
             }
             val valid=from!=null && to!=null && from!=to && runCatching { LocalDate.parse(date);LocalTime.parse(time) }.isSuccess && services.isNotEmpty()
-            Button(onClick={ showResults=true;editTrip=false;runSearch() },enabled=valid && !result.loading,modifier=Modifier.fillMaxWidth().heightIn(min=52.dp)) {
+            Button(onClick={ showResults=true;editTrip=false;runSearch() },enabled=valid && !result.loading,modifier=Modifier.fillMaxWidth().heightIn(min=52.dp).testTag("preferences-find-routes")) {
                 Text(if(result.loading) "Finding routes…" else if(mode=="compare") "Compare routes" else when(mode) { "PRASA"->"Find trains";"MYCITI"->"Find MyCiTi routes";else->"Find Golden Arrow routes" })
             }
             if(!onlineWalks) Text("Timetables can be checked now. Enable walking estimates to calculate access and final walks.",style=MaterialTheme.typography.bodySmall)

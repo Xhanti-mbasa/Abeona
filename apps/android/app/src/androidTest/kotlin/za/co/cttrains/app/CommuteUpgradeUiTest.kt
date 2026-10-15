@@ -44,11 +44,11 @@ class CommuteUpgradeUiTest {
     @Test fun recurringDaysCanBeEditedAndRemainInEncryptedBackup() {
         val r=CommuteRoutine("test-repeat","Morning commute",SearchQuery("Salt River","Unibell","2026-10-12","08:00"),setOf(1,2,3,4,5),"cttrains-web",20,5,createdAt=1)
         runBlocking { features.store.update { it.copy(routines=listOf(r)) } }
-        app.waitUntil(15000) { features.state.value.extras.routines.size==1 }
+        app.waitUntil(15000) { features.state.value.extras.routines.singleOrNull()?.id==r.id }
         app.onNodeWithTag("nav:upcoming").performClick()
         app.waitUntil(15000) { app.onAllNodesWithTag("upcoming-journeys").fetchSemanticsNodes().isNotEmpty() }
-        app.onNodeWithTag("upcoming-journeys").performScrollToNode(hasText("Edit recurrence"))
-        app.onNodeWithText("Edit recurrence").performScrollTo().performClick()
+        app.waitUntil(15000) { app.onAllNodesWithTag("routine-edit:${r.id}").fetchSemanticsNodes().isNotEmpty() }
+        app.onNodeWithTag("routine-edit:${r.id}").performScrollTo().performClick()
         app.onNodeWithTag("repeat-day:6").performClick()
         app.onNodeWithTag("save-routine").performScrollTo().performClick()
         app.waitUntil(15000) { 6 in features.state.value.extras.routines.single().days }
