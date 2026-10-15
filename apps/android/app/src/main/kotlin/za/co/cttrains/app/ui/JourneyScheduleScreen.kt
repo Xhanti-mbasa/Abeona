@@ -58,13 +58,12 @@ fun UpcomingScreen(state: TrainState, model: TrainViewModel) {
     val past = state.scheduled.filter { it.departureAt <= now }.takeLast(20).reversed()
     LazyColumn(Modifier.fillMaxSize().testTag("upcoming-journeys"), contentPadding = PaddingValues(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         item {
-            Text("Your journeys", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
-            Text("A little planning. A calmer commute.", Modifier.padding(top = 6.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
+            AbeonaHeading("Your journeys", "Make your usual trips feel effortless.")
         }
         item { Text("Recurring journeys",style=MaterialTheme.typography.titleLarge);Text("Choose Repeat on a train or bus journey to set its weekdays.",style=MaterialTheme.typography.bodySmall) }
         items(feature.extras.routines,key={ "routine:${it.id}" }) { routine->
             Card(Modifier.fillMaxWidth()) { Column(Modifier.padding(16.dp),verticalArrangement=Arrangement.spacedBy(8.dp)) {
-                Row { Text(routine.name,Modifier.weight(1f),style=MaterialTheme.typography.titleMedium);Switch(routine.enabled,{ features.toggleRoutine(routine.id) }) }
+                Row(verticalAlignment=Alignment.CenterVertically) { Text(routine.name,Modifier.weight(1f),style=MaterialTheme.typography.titleMedium);Switch(routine.enabled,{ features.toggleRoutine(routine.id) }) }
                 Text("${routine.origin?.label ?: routine.query.from} → ${routine.destination?.label ?: routine.query.to} · ${routine.query.time}")
                 Text(routine.days.sorted().joinToString { RoutineDayLabels[it-1] },style=MaterialTheme.typography.labelLarge)
                 FlowRow(horizontalArrangement=Arrangement.spacedBy(6.dp)) {
@@ -83,7 +82,7 @@ fun UpcomingScreen(state: TrainState, model: TrainViewModel) {
             Card(Modifier.fillMaxWidth()) { Column(Modifier.padding(16.dp),verticalArrangement=Arrangement.spacedBy(6.dp)) { Text("Recurring bus itinerary",style=MaterialTheme.typography.titleMedium);Text(TripFiles.text(trip));ShareJourneyButton(features) { trip } } }
         }
         if (upcoming.isEmpty()) item {
-            Card(shape = RoundedCornerShape(24.dp)) {
+            Card(shape = AbeonaSpace.panel) {
                 Column(Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Icon(Icons.AutoMirrored.Outlined.EventNote, null, Modifier.size(40.dp), tint = MaterialTheme.colorScheme.primary)
                     Text("Make space for the next train", style = MaterialTheme.typography.titleLarge)
@@ -96,7 +95,7 @@ fun UpcomingScreen(state: TrainState, model: TrainViewModel) {
             TextButton(onClick = { context.startActivity(android.content.Intent(android.provider.Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(android.provider.Settings.EXTRA_APP_PACKAGE, context.packageName)) }) { Text("Notification settings") }
         }
         items(upcoming, key = { it.id }) { item ->
-            Card(shape = RoundedCornerShape(24.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)) {
+            Card(shape = AbeonaSpace.panel, colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)) {
                 Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(JourneyDate.format(Instant.ofEpochMilli(item.departureAt)), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))

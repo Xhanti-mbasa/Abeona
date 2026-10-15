@@ -41,7 +41,7 @@ fun AlertsScreen(state: TrainState, model: TrainViewModel) {
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
         item {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Updates & delays", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+                Text("Service updates", style = MaterialTheme.typography.headlineLarge, modifier = Modifier.weight(1f))
                 IconButton(onClick = model::refreshAlerts, enabled = !state.alertsLoading) { Icon(Icons.Outlined.Refresh, "Refresh service alerts") }
             }
             Text("Published by CT Trains from Metrorail reports. Message times use South African time.", style = MaterialTheme.typography.bodySmall)

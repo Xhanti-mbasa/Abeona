@@ -7,6 +7,11 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import za.co.cttrains.app.*
@@ -26,8 +31,8 @@ import za.co.cttrains.core.*
         spot.preferredStation?.let { station->model.edit { if(start) it.copy(from=station) else it.copy(to=station) } }
         onPlan()
     }
-    LazyColumn(Modifier.fillMaxSize().testTag("saved-addresses"),contentPadding=PaddingValues(16.dp),verticalArrangement=Arrangement.spacedBy(12.dp)) {
-        item { Text("Saved places",style=MaterialTheme.typography.headlineLarge);Text("Your familiar places, ready when you are.",color=MaterialTheme.colorScheme.onSurfaceVariant) }
+    LazyColumn(Modifier.fillMaxSize().testTag("saved-addresses"),contentPadding=PaddingValues(20.dp),verticalArrangement=Arrangement.spacedBy(16.dp)) {
+        item { AbeonaHeading("Saved places","Your everyday places, ready to go.") }
         item { FeatureStatus(s) }
         items(SavedAddresses.labels) { label->
             val spot=s.extras.spots.firstOrNull { SavedAddresses.role(it)==label }
@@ -46,7 +51,7 @@ import za.co.cttrains.core.*
     target?.let { place->
         val label=chosenLabel
         val reserved=label=="Custom" && SavedAddresses.labels.any { it.equals(customName.trim(),ignoreCase=true) }
-        AlertDialog(onDismissRequest={ target=null },title={ Text("Confirm $label address") },text={ Column(verticalArrangement=Arrangement.spacedBy(12.dp)) { Text(place.label);Text("${place.point.latitude}, ${place.point.longitude}",style=MaterialTheme.typography.bodySmall);if(label=="Custom") OutlinedTextField(customName,{ customName=it.take(100) },label={ Text("Place name") },singleLine=true,isError=reserved,supportingText=if(reserved) ({ Text("Edit Home, Work or School from its saved-place card. Choose another name here.") }) else null);Text("Choose a station after saving.",style=MaterialTheme.typography.bodySmall) } },confirmButton={ TextButton(onClick={ m.saveAddress(if(label=="Custom") customName.trim() else label,place,editingId);target=null },enabled=label!="Custom" || customName.isNotBlank() && !reserved) { Text("Save address") } },dismissButton={ TextButton(onClick={ target=null }) { Text("Cancel") } })
+        AlertDialog(onDismissRequest={ target=null },title={ Text("Confirm $label address") },text={ Column(Modifier.heightIn(max=360.dp).verticalScroll(rememberScrollState()),verticalArrangement=Arrangement.spacedBy(12.dp)) { Text(place.label);Text("${place.point.latitude}, ${place.point.longitude}",style=MaterialTheme.typography.bodySmall);if(label=="Custom") OutlinedTextField(customName,{ customName=it.take(100) },label={ Text("Place name") },singleLine=true,isError=reserved,supportingText=if(reserved) ({ Text("Edit Home, Work or School from its saved-place card. Choose another name here.") }) else null);Text("Choose a station after saving.",style=MaterialTheme.typography.bodySmall) } },confirmButton={ TextButton(onClick={ m.saveAddress(if(label=="Custom") customName.trim() else label,place,editingId);target=null },enabled=label!="Custom" || customName.isNotBlank() && !reserved) { Text("Save address") } },dismissButton={ TextButton(onClick={ target=null }) { Text("Cancel") } })
     }
     stationChoice?.let { spot->JourneyStationPicker(WalkEndpoint("spot:${spot.id}",spot.name,spot.point),train,s,true,spot.preferredStation,{ stationChoice=null }) { station,_->
         m.saveSpotStation(spot.id,station);stationChoice=null
@@ -54,8 +59,8 @@ import za.co.cttrains.core.*
     removing?.let { spot->AlertDialog(onDismissRequest={ removing=null },title={ Text("Remove ${spot.name}?") },text={ Text("You can set it again later.") },confirmButton={ TextButton(onClick={ m.removeSpot(spot.id);removing=null }) { Text("Remove") } },dismissButton={ TextButton(onClick={ removing=null }) { Text("Keep") } }) }
 }
 @Composable private fun AddressCard(label: String,spot: MarkedSpot?,onEdit: ()->Unit,onFrom: ()->Unit,onTo: ()->Unit,onStation: ()->Unit,onRemove: ()->Unit) {
-    Card(Modifier.fillMaxWidth()) { Column(Modifier.padding(16.dp),verticalArrangement=Arrangement.spacedBy(6.dp)) {
-        Text(label,style=MaterialTheme.typography.titleLarge)
+    Card(Modifier.fillMaxWidth(),shape=AbeonaSpace.panel,colors=CardDefaults.cardColors(containerColor=MaterialTheme.colorScheme.surface)) { Column(Modifier.padding(22.dp),verticalArrangement=Arrangement.spacedBy(10.dp)) {
+        Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(12.dp)) { Icon(when(label) { "Home"->Icons.Outlined.Home;"Work"->Icons.Outlined.WorkOutline;"School"->Icons.Outlined.School;else->Icons.Outlined.Place },null,tint=MaterialTheme.colorScheme.primary);Text(label,style=MaterialTheme.typography.titleLarge) }
         Text(spot?.note?.ifBlank { "Saved map location" } ?: "Address not set",style=MaterialTheme.typography.bodyMedium)
         spot?.preferredStation?.let { Text("Preferred station · $it",style=MaterialTheme.typography.labelLarge) }
         FlowRow(horizontalArrangement=Arrangement.spacedBy(6.dp)) {

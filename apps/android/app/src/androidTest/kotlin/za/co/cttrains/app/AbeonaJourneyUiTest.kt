@@ -29,8 +29,8 @@ class AbeonaJourneyUiTest {
     @Test fun homeHasOneDestinationSearchAndNativeNavigation() {
         app.onNodeWithTag("home-destination").assertIsDisplayed()
         app.onNodeWithText("Where to?").assertIsDisplayed();app.onNodeWithTag("nav:plan").assertIsSelected()
-        app.onNodeWithText("Find trains").assertDoesNotExist();UiScreenshots.save("abeona-home-dark")
-        app.onNodeWithContentDescription("Settings").performClick();app.onNodeWithText("Your app, your data").assertIsDisplayed()
+        listOf("map","plan","saved","upcoming","settings").forEach { app.onNodeWithTag("nav:$it").assertIsDisplayed() };app.onNodeWithTag("home-find-routes").assertIsDisplayed();UiScreenshots.save("abeona-home-dark")
+        app.onNodeWithContentDescription("Settings").performClick();app.onNodeWithText("Your app, your choices.").assertIsDisplayed()
         app.runOnUiThread { app.activity.onBackPressedDispatcher.onBackPressed() }
         app.onNodeWithTag("home-destination").assertIsDisplayed()
         app.runOnUiThread { train.setTheme("Light") };app.waitUntil(15000) { train.state.value.preferences.theme=="Light" };app.waitForIdle();UiScreenshots.save("abeona-home-light")
@@ -54,7 +54,7 @@ class AbeonaJourneyUiTest {
         assertTrue(fresh!!.journeys.isNotEmpty());assertTrue(fresh.provenance!!.sourceAvailable);assertFalse(fresh.provenance!!.cached)
         assertEquals("scheduled",fresh.provenance!!.kind)
         android.util.Log.i("AbeonaLiveAcceptance","fresh-source=${fresh.sourceId}; query=$query; options=${fresh.journeys.size}; fetchedAt=${fresh.fetchedAt}; backend=absent; seededCache=false")
-        app.onNodeWithText("Your routes").assertIsDisplayed();app.onNodeWithTag("start-selected-journey").assertIsDisplayed();UiScreenshots.save("abeona-live-results-dark")
+        app.onNodeWithText("Your routes").assertIsDisplayed();app.onNodeWithTag("start-selected-journey").assertIsDisplayed();UiScreenshots.save("abeona-live-results-dark");app.runOnUiThread { train.setTheme("Light") };app.waitUntil(15000) { train.state.value.preferences.theme=="Light" };app.waitForIdle();UiScreenshots.save("abeona-live-results-light");app.runOnUiThread { train.setTheme("Dark") };app.waitUntil(15000) { train.state.value.preferences.theme=="Dark" };app.waitForIdle()
         app.onNodeWithTag("start-selected-journey").performClick()
         app.waitUntil(15000) { app.onAllNodesWithTag("directions-screen").fetchSemanticsNodes().isNotEmpty() }
         app.onNodeWithTag("directions-screen").assertIsDisplayed();app.onNodeWithTag("nav:plan").assertDoesNotExist()
@@ -66,7 +66,7 @@ class AbeonaJourneyUiTest {
         app.onNodeWithTag("begin-directions").performClick()
         app.waitUntil(15000) { DirectionsRuntime.state.value.running }
         app.onNodeWithTag("directions-next").assertIsDisplayed()
-        app.mainClock.advanceTimeBy(300);app.waitForIdle();UiScreenshots.save("abeona-active-dark")
+        app.mainClock.advanceTimeBy(300);app.waitForIdle();UiScreenshots.save("abeona-active-dark");app.runOnUiThread { train.setTheme("Light") };app.waitUntil(15000) { train.state.value.preferences.theme=="Light" };app.waitForIdle();UiScreenshots.save("abeona-active-light")
     }
     @Test fun customPlaceConfirmationAndRestartPreserveIdentity() {
         app.onNodeWithTag("nav:saved").performClick()

@@ -4,6 +4,10 @@ package za.co.cttrains.app.ui
 import android.Manifest
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import za.co.cttrains.app.R
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.ui.Alignment
@@ -83,10 +87,13 @@ import za.co.cttrains.core.*
         model.openDirections()
     } }
     if(manual && mode!="compare" && mode!="PRASA") Column(Modifier.fillMaxSize()) { TextButton(onClick={ manual=false }) { Text("Journey planner") };BusPlanner(train,model,s,m,TransportService.valueOf(mode)) { model.openMap() } }
-    else if(!showResults) AbeonaHome(train,model,s,m,from,board,date,time,{ picker=false },{ picker=true },{ datePicker=true },{ timePicker=true },{ stationPicker=true },{ editTrip=true },{ showResults=true })
+    else if(!showResults) AbeonaHome(train,model,s,m,from,to,board,arrive,date,time,mode,{ mode=it;manual=false },{ mode="compare";editTrip=true },{ picker=false },{ picker=true },{ m.swapPlaces();model.edit { it.copy(from=it.to,to=it.from) } },{ datePicker=true },{ timePicker=true },{ stationPicker=it },{ editTrip=true },{ showResults=true })
     else Column(Modifier.fillMaxSize().testTag("route-results")) {
         LazyColumn(Modifier.weight(1f),contentPadding=PaddingValues(20.dp),verticalArrangement=Arrangement.spacedBy(14.dp)) {
-            item { Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.Top) { Column(Modifier.weight(1f)) { Text("Your routes",style=MaterialTheme.typography.headlineLarge);Text("${from?.label.orEmpty()} → ${to?.label.orEmpty()}",style=MaterialTheme.typography.titleSmall);Text("${runCatching { LocalDate.parse(date).format(DateTimeFormatter.ofPattern("EEE, d MMM")) }.getOrDefault(date)} · after $time",style=MaterialTheme.typography.bodySmall) };IconButton(onClick={ editTrip=true }) { Icon(Icons.Outlined.Edit,"Edit journey") } } }
+            item { Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.Top) { Column(Modifier.weight(1f)) { AbeonaHeading("Your routes","${from?.label.orEmpty()} → ${to?.label.orEmpty()}");Text("${runCatching { LocalDate.parse(date).format(DateTimeFormatter.ofPattern("EEE, d MMM")) }.getOrDefault(date)} · after $time",style=MaterialTheme.typography.bodySmall) };IconButton(onClick={ editTrip=true }) { Icon(Icons.Outlined.Edit,"Edit journey") } } }
+        item { Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),horizontalArrangement=Arrangement.spacedBy(8.dp)) {
+            TransportService.values().forEach { service-> FilterChip(selected=service in services,onClick={ mode=service.name },label={ Text(service.title) },shape=androidx.compose.foundation.shape.RoundedCornerShape(24.dp),modifier=Modifier.heightIn(min=48.dp),colors=FilterChipDefaults.filterChipColors(containerColor=MaterialTheme.colorScheme.surface,selectedContainerColor=MaterialTheme.colorScheme.primaryContainer,selectedLabelColor=MaterialTheme.colorScheme.primary),border=null) }
+        } }
         if(result.loading) item { LinearProgressIndicator(Modifier.fillMaxWidth());Text(result.progress,style=MaterialTheme.typography.labelSmall) }
         result.error?.let { error -> item { Text(error,color=MaterialTheme.colorScheme.error) } }
         if(!result.loading && (result.error!=null || result.sections.values.any { it.options.isEmpty() })) item {
@@ -136,9 +143,9 @@ import za.co.cttrains.core.*
         if(result.sections.isNotEmpty()) item { Text("Fastest found applies only to complete, timed routes checked here. Bus transfers and unconfirmed survey points are excluded from that claim.",style=MaterialTheme.typography.bodySmall) }
         if(mode!="compare" && mode!="PRASA" && s.extras.beta.enabled(TransportService.valueOf(mode))) item { TextButton(onClick={ manual=true;m.chooseBus(TransportService.valueOf(mode)) }) { Text("Manual bus setup · boarding & drop-off stops") } }
         }
-        if(selectedOption!=null) Button(onClick={ startOption(selectedOption) },modifier=Modifier.fillMaxWidth().padding(horizontal=20.dp,vertical=12.dp).heightIn(min=56.dp).testTag("start-selected-journey")) { Text("Start this journey") }
+        if(selectedOption!=null) Button(onClick={ startOption(selectedOption) },modifier=Modifier.fillMaxWidth().padding(horizontal=20.dp,vertical=12.dp).heightIn(min=56.dp).testTag("start-selected-journey")) { Text("Start journey") }
     }
-    if(editTrip) ModalBottomSheet(onDismissRequest={ editTrip=false },sheetState=rememberModalBottomSheetState(skipPartiallyExpanded=true)) {
+    if(editTrip) ModalBottomSheet(onDismissRequest={ editTrip=false },sheetState=rememberModalBottomSheetState(skipPartiallyExpanded=true),containerColor=MaterialTheme.colorScheme.surface,shape=AbeonaSpace.sheet) {
         LazyColumn(Modifier.fillMaxWidth().imePadding(),contentPadding=PaddingValues(20.dp),verticalArrangement=Arrangement.spacedBy(12.dp)) {
         item {
             Text("Your journey",style=MaterialTheme.typography.headlineSmall)
@@ -234,11 +241,12 @@ import za.co.cttrains.core.*
     if(consent) AlertDialog(onDismissRequest={ consent=false },title={ Text("Calculate mapped walking routes?") },text={ Text("FOSSGIS / OSRM receives the selected start, destination and candidate stop coordinates. This checks foot paths and caches them locally. Published transit times remain scheduled estimates.") },confirmButton={ TextButton(onClick={ onlineWalks=true;consent=false }) { Text("Enable estimates") } },dismissButton={ TextButton(onClick={ consent=false }) { Text("Keep timetable only") } })
 }
 
-@Composable internal fun ModeOfTransport(mode: String,onMode: (String)->Unit) {
+@Composable internal fun ModeOfTransport(mode: String,compact: Boolean=false,onMode: (String)->Unit) {
     var open by remember { mutableStateOf(false) }
     val label=if(mode=="compare") "Compare" else TransportService.valueOf(mode).title
-    Box(Modifier.fillMaxWidth()) {
-        OutlinedButton(onClick={ open=true },modifier=Modifier.fillMaxWidth()) { Text("Mode of transport · $label") }
+    Box {
+        if(compact) FilledTonalButton(onClick={ open=true },colors=ButtonDefaults.filledTonalButtonColors(containerColor=MaterialTheme.colorScheme.surface),modifier=Modifier.heightIn(min=48.dp)) { DesignIcon(za.co.cttrains.app.R.drawable.abeona_train_front,tint=MaterialTheme.colorScheme.primary);Spacer(Modifier.width(10.dp));Text(label,style=MaterialTheme.typography.labelMedium);Spacer(Modifier.width(12.dp));DesignIcon(za.co.cttrains.app.R.drawable.abeona_chevron_down,modifier=Modifier.size(16.dp)) }
+        else OutlinedButton(onClick={ open=true },modifier=Modifier.fillMaxWidth()) { Text("Mode of transport · $label") }
         DropdownMenu(open,{ open=false }) {
             TransportService.values().forEach { service -> DropdownMenuItem(text={ Text(service.title) },onClick={ onMode(service.name);open=false }) }
             DropdownMenuItem(text={ Text("Compare") },onClick={ onMode("compare");open=false })
@@ -270,7 +278,7 @@ import za.co.cttrains.core.*
         suggestions=emptyList();issue=null
         if(online && query.trim().length>=3) { delay(850);try { suggestions=m.placeSuggestions(query) } catch(e: Exception) { if(e is CancellationException) throw e;issue="Online suggestions unavailable. Saved stops and places are still searchable." } }
     }
-    ModalBottomSheet(onDismissRequest=onDismiss,sheetState=rememberModalBottomSheetState(skipPartiallyExpanded=true)) {
+    ModalBottomSheet(onDismissRequest=onDismiss,sheetState=rememberModalBottomSheetState(skipPartiallyExpanded=true),containerColor=MaterialTheme.colorScheme.surface,shape=AbeonaSpace.sheet) {
         LazyColumn(Modifier.fillMaxWidth().imePadding(),contentPadding=PaddingValues(16.dp),verticalArrangement=Arrangement.spacedBy(8.dp)) {
             item {
                 Text(if(start) "Where do you leave from?" else "Where do you want to go?",style=MaterialTheme.typography.titleLarge)
@@ -296,28 +304,44 @@ import za.co.cttrains.core.*
     var fare by remember(option.id) { mutableStateOf(option.fares.firstOrNull()) }
     val isRouteSelected=selected
     val clock=remember { DateTimeFormatter.ofPattern("HH:mm").withZone(CapeTownZone) }
-    Card(onClick=onSelect,modifier=Modifier.fillMaxWidth().testTag("route-option:${option.id}").semantics { this.selected=isRouteSelected;role=Role.RadioButton },border=BorderStroke(if(selected) 1.5.dp else 1.dp,if(selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant),colors=CardDefaults.cardColors(containerColor=MaterialTheme.colorScheme.surfaceContainer)) { Column(Modifier.padding(16.dp),verticalArrangement=Arrangement.spacedBy(6.dp)) {
-        if(fastest) Text("Fastest complete route",style=MaterialTheme.typography.labelMedium,color=MaterialTheme.colorScheme.primary)
-        Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically) {
-            Text(option.estimate.totalMinutes?.let { "$it min" } ?: "${option.rideMinutes} min on board",Modifier.weight(1f),style=MaterialTheme.typography.headlineMedium)
-            Icon(if(selected) Icons.Outlined.RadioButtonChecked else Icons.Outlined.RadioButtonUnchecked,null,tint=if(selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
+    Card(onClick=onSelect,modifier=Modifier.fillMaxWidth().testTag("route-option:${option.id}").semantics { this.selected=isRouteSelected;role=Role.RadioButton },shape=AbeonaSpace.panel,border=BorderStroke(if(selected) 2.dp else 1.dp,if(selected) MaterialTheme.colorScheme.primary else androidx.compose.ui.graphics.Color.Transparent),colors=CardDefaults.cardColors(containerColor=MaterialTheme.colorScheme.surface)) {
+        Column(Modifier.padding(22.dp),verticalArrangement=Arrangement.spacedBy(10.dp)) {
+            Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically) {
+                Text(if(fastest) "BEST COMPLETE OPTION" else option.service.title,style=MaterialTheme.typography.labelSmall,color=MaterialTheme.colorScheme.primary,modifier=Modifier.weight(1f))
+                Icon(if(selected) Icons.Outlined.CheckCircle else Icons.Outlined.RadioButtonUnchecked,null,tint=if(selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant)
+            }
+            Row(verticalAlignment=Alignment.Bottom,horizontalArrangement=Arrangement.spacedBy(8.dp)) {
+                Text((option.estimate.totalMinutes ?: option.rideMinutes).toString(),style=MaterialTheme.typography.displaySmall)
+                Text(if(option.estimate.totalMinutes!=null) "min" else "min on board",style=MaterialTheme.typography.titleLarge,modifier=Modifier.padding(bottom=6.dp))
+            }
+            Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(16.dp)) {
+                Text(clock.format(Instant.ofEpochMilli(option.estimate.departureAt)),style=MaterialTheme.typography.titleLarge)
+                DesignIcon(R.drawable.abeona_arrow_right,tint=MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(option.estimate.arrivalAt?.let { clock.format(Instant.ofEpochMilli(it)) } ?: "Unknown",style=MaterialTheme.typography.titleLarge)
+            }
+            Text(if(option.parts.isNotEmpty()) "Rail + MyCiTi" else option.rail?.takeIf { it.transfers>0 }?.let { j->"${j.transfers} ${if(j.transfers==1) "change" else "changes"} at ${j.legs.drop(1).joinToString { it.departure.name }}" } ?: "${option.board} → ${option.alight}",style=MaterialTheme.typography.bodyLarge)
+            Text("Walk ${option.estimate.walkingMinutes?.let { "$it min" } ?: "unknown"} · wait ${option.estimate.waitingMinutes?.let { "$it min + 5 min buffer" } ?: "unknown"}",style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant)
+            if(option.estimate.totalMinutes==null) Text("Walking time unavailable",style=MaterialTheme.typography.bodySmall)
+            Text(fare?.let { "Fare ${money(it.cents)} · ${it.label}" } ?: "Fare unavailable",style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant)
+            HorizontalDivider(color=MaterialTheme.colorScheme.outlineVariant)
+            Row(horizontalArrangement=Arrangement.spacedBy(8.dp),verticalAlignment=Alignment.CenterVertically) {
+                DesignIcon(if(option.cached) R.drawable.abeona_wifi_off else R.drawable.abeona_clock3,modifier=Modifier.size(16.dp),tint=MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("${if(option.cached) "Cached schedule" else "Scheduled"} · ${option.service.title} · checked ${checked(option.fetchedAt)}",style=MaterialTheme.typography.labelSmall,color=MaterialTheme.colorScheme.onSurfaceVariant,modifier=Modifier.weight(1f))
+            }
+            TextButton(onClick={ details=true },contentPadding=PaddingValues(0.dp),modifier=Modifier.heightIn(min=48.dp)) { Text("Route details",style=MaterialTheme.typography.labelMedium) }
         }
-        if(option.estimate.totalMinutes==null) Text("Walking time unavailable",style=MaterialTheme.typography.bodySmall)
-        Text(if(option.parts.isNotEmpty()) "Rail + MyCiTi" else "${option.board} → ${option.alight}",style=MaterialTheme.typography.bodyMedium)
-        option.rail?.takeIf { it.transfers>0 }?.let { journey -> Text("${journey.transfers} ${if(journey.transfers==1) "change" else "changes"} · ${journey.legs.drop(1).joinToString { it.departure.name }}",style=MaterialTheme.typography.bodySmall) }
-        Text("Board ${clock.format(Instant.ofEpochMilli(option.estimate.departureAt))}${option.estimate.arrivalAt?.let { " · arrive ${clock.format(Instant.ofEpochMilli(it))}" }.orEmpty()}",style=MaterialTheme.typography.bodySmall)
-        Text("Walk ${option.estimate.walkingMinutes?.let { "$it min" } ?: "unknown"} · wait ${option.estimate.waitingMinutes?.let { "$it min + 5 min buffer" } ?: "unknown"}",style=MaterialTheme.typography.bodySmall)
-        Text(fare?.let { "Fare ${money(it.cents)} · ${it.label}" } ?: "Fare unavailable",style=MaterialTheme.typography.bodyMedium)
-        Text("${option.service.title} · ${if(option.cached) "Cached schedule" else "Scheduled"} · checked ${java.time.Instant.ofEpochMilli(option.fetchedAt).atZone(CapeTownZone).format(DateTimeFormatter.ofPattern("d MMM, HH:mm"))}",style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant)
-        TextButton(onClick={ details=!details }) { Text(if(details) "Hide details" else "Route details") }
-        if(details) FlowRow(horizontalArrangement=Arrangement.spacedBy(8.dp)) {
+    }
+    if(details) ModalBottomSheet(onDismissRequest={ details=false },sheetState=rememberModalBottomSheetState(skipPartiallyExpanded=true),containerColor=MaterialTheme.colorScheme.surface,shape=AbeonaSpace.sheet) {
+        Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(24.dp).navigationBarsPadding(),verticalArrangement=Arrangement.spacedBy(16.dp)) {
+            AbeonaHeading("Journey details","${option.board} → ${option.alight}")
+        FlowRow(horizontalArrangement=Arrangement.spacedBy(8.dp)) {
             TextButton(onClick=onView) { Text("View map") }
             ShareJourneyButton(m) { val state=model.state.value;JourneySharing.itinerary(za.co.cttrains.app.directions.DirectionsPlans.option(option,state,s),option.service,s.extras.localName,System.currentTimeMillis()) }
             if(option.parts.isEmpty() && option.service==TransportService.PRASA) TextButton(onClick=onSchedule) { Text("Save & reminders") }
             if(option.parts.isEmpty() && option.service!=TransportService.PRASA) TextButton(onClick={ val b=option.bus!!;repeatEdit=CommuteRoutine(java.util.UUID.randomUUID().toString(),"${s.access?.label ?: option.board} → ${s.destination?.label ?: option.alight}".take(100),SearchQuery(option.board,option.alight,java.time.Instant.ofEpochMilli(option.estimate.departureAt).atZone(CapeTownZone).toLocalDate().toString(),b.departure.time),setOf(1,2,3,4,5),option.service.name,option.walks.firstOrNull { it.to.id.startsWith("bus:") }?.minutes ?: 0,5,origin=s.access ?: b.board?.let { WalkEndpoint("bus:${option.service.name}:${it.id}",it.name.take(100),it.point) },destination=s.destination ?: b.alight?.let { WalkEndpoint("bus:${option.service.name}:${it.id}",it.name.take(100),it.point) },createdAt=System.currentTimeMillis(),service=option.service,busRoute=b.timetable.route,boardCallId=b.departure.id,alightCallId=b.arrival.id) }) { Text("Repeat journey") }
             if(option.parts.isEmpty() && option.service!=TransportService.PRASA) TextButton(onClick={ selectFare=true }) { Text("Choose fare") }
         }
-        if(details) {
+        run {
             option.parts.forEach { part -> Text("${part.service.title} · ${part.board} → ${part.alight}",style=MaterialTheme.typography.titleSmall);Text(part.fares.firstOrNull()?.let { "Fare ${money(it.cents)}" } ?: "Stage fare unavailable",style=MaterialTheme.typography.bodySmall) }
             option.walks.forEach { leg -> PlannerWalk(leg,s,m) }
             option.rail?.legs?.forEach { leg -> Text("Train ${leg.train} · ${leg.departure.name} ${leg.departure.time} → ${leg.arrival.name} ${leg.arrival.time}",style=MaterialTheme.typography.bodySmall) }
@@ -325,9 +349,12 @@ import za.co.cttrains.core.*
             Text("${if(option.cached) "Includes saved data" else "Checked"} · ${checked(option.fetchedAt)}",style=MaterialTheme.typography.labelSmall)
             if(option.notice.isNotBlank()) Text(option.notice,style=MaterialTheme.typography.bodySmall)
         }
-    } }
+
+            AbeonaAction("Start this journey",{ details=false;onDirections() })
+        }
+    }
     repeatEdit?.let { RoutineEditor(it,m) { repeatEdit=null } }
-    if(selectFare) ModalBottomSheet(onDismissRequest={ selectFare=false },sheetState=rememberModalBottomSheetState(skipPartiallyExpanded=true)) {
+    if(selectFare) ModalBottomSheet(onDismissRequest={ selectFare=false },sheetState=rememberModalBottomSheetState(skipPartiallyExpanded=true),containerColor=MaterialTheme.colorScheme.surface,shape=AbeonaSpace.sheet) {
         val rows=s.snapshots[option.service]?.fares.orEmpty()
         var filter by remember { mutableStateOf("") }
         LazyColumn(contentPadding=PaddingValues(16.dp),verticalArrangement=Arrangement.spacedBy(8.dp)) {

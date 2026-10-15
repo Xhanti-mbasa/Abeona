@@ -84,11 +84,16 @@ fun TrainApp(state: TrainState, model: TrainViewModel) {
     LaunchedEffect(state.requestedScreen) { state.requestedScreen?.let { go(it); model.navigationHandled() } }
     Scaffold(
         contentWindowInsets=if(fullMap) WindowInsets(0,0,0,0) else WindowInsets.safeDrawing,
-        topBar = { if(!fullMap) Column { TopAppBar(title={ Text(stringResource(R.string.app_name),style=MaterialTheme.typography.titleLarge) },actions={ IconButton(onClick={ go("settings") },modifier=Modifier.testTag("open-settings")) { Icon(Icons.Outlined.Settings,"Settings") } },colors=TopAppBarDefaults.topAppBarColors(containerColor=MaterialTheme.colorScheme.background));DirectionsCompactBanner { go("directions") } } },
-        snackbarHost = { SnackbarHost(snackbar) },
-        bottomBar = { if(!fullMap) NavigationBar(containerColor=MaterialTheme.colorScheme.background,tonalElevation=0.dp) {
-            listOf(Triple("plan","Home",Icons.Outlined.Home),Triple("upcoming","Journeys",Icons.AutoMirrored.Outlined.EventNote),Triple("saved","Saved",Icons.Outlined.BookmarkBorder),Triple("alerts","Updates",Icons.Outlined.NotificationsNone)).forEach { (route,title,icon)->NavigationBarItem(selected=screen==route || route=="saved" && screen=="places",onClick={ go(route) },icon={ Icon(icon,null) },label={ Text(title) },modifier=Modifier.testTag("nav:$route"),colors=NavigationBarItemDefaults.colors(selectedIconColor=MaterialTheme.colorScheme.primary,selectedTextColor=MaterialTheme.colorScheme.primary,indicatorColor=MaterialTheme.colorScheme.primaryContainer)) }
+        topBar = { if(!fullMap) Column(Modifier.statusBarsPadding()) {
+            Row(Modifier.fillMaxWidth().heightIn(min=48.dp).padding(start=24.dp,end=12.dp),verticalAlignment=Alignment.CenterVertically) {
+                Text(stringResource(R.string.app_name),style=MaterialTheme.typography.titleMedium,fontWeight=FontWeight.Bold,modifier=Modifier.weight(1f))
+                IconButton(onClick={ go("alerts") },modifier=Modifier.testTag("open-service-updates")) { DesignIcon(R.drawable.abeona_bell,"Service updates") }
+                IconButton(onClick={ go("settings") },modifier=Modifier.testTag("open-settings")) { DesignIcon(R.drawable.abeona_ellipsis,"Settings") }
+            }
+            DirectionsCompactBanner { go("directions") }
         } },
+        snackbarHost = { SnackbarHost(snackbar) },
+        bottomBar = { if(!fullMap) AbeonaDock(screen,::go) },
     ) { padding ->
         BoxWithConstraints(Modifier.fillMaxSize().padding(padding)) {
             val wide = maxWidth >= 840.dp
@@ -187,16 +192,7 @@ private fun AboutScreen(state: TrainState, model: TrainViewModel,feature: za.co.
     var confirmClear by remember { mutableStateOf(false) }
     var confirmProfile by remember { mutableStateOf(false) }
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp).widthIn(max = 700.dp), verticalArrangement = Arrangement.spacedBy(20.dp)) {
-        Text("Your app, your data", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
-        Notice("An independent, community app for Cape Town rail commuters. Timetables come from CT Trains. This app is not affiliated with CT Trains, PRASA or Metrorail.", Icons.Outlined.Train)
-        FilledTonalButton(onClick=onDirections,modifier=Modifier.fillMaxWidth()) { Text("Journey directions & Live Updates") }
-        OutlinedButton(onClick=onUpdates,modifier=Modifier.fillMaxWidth()) { Text("App updates") }
-        OutlinedButton(onClick=model::openMap,modifier=Modifier.fillMaxWidth()) { Icon(Icons.Outlined.Map,null);Spacer(Modifier.width(8.dp));Text("Explore transport map") }
-        OutlinedButton(onClick=onBudget,modifier=Modifier.fillMaxWidth()) { Text("Travel budget & fare corrections") }
-        BetaSettings(feature,features,onBuses,onTrips,onCommunity,onWhatsApp)
-        FeatureStatus(feature)
-        ProfileSettings(feature,features)
-        HostedSettings(feature,features)
+        AbeonaHeading("Settings", "Your app, your choices.")
         Card(shape = RoundedCornerShape(24.dp)) {
             Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 Text("Appearance", style = MaterialTheme.typography.titleLarge)
@@ -209,6 +205,15 @@ private fun AboutScreen(state: TrainState, model: TrainViewModel,feature: za.co.
                 }
             }
         }
+        Notice("An independent, community app for Cape Town rail commuters. Timetables come from CT Trains. This app is not affiliated with CT Trains, PRASA or Metrorail.", Icons.Outlined.Train)
+        FilledTonalButton(onClick=onDirections,modifier=Modifier.fillMaxWidth()) { Text("Journey directions & Live Updates") }
+        OutlinedButton(onClick=onUpdates,modifier=Modifier.fillMaxWidth()) { Text("App updates") }
+        OutlinedButton(onClick=model::openMap,modifier=Modifier.fillMaxWidth()) { Icon(Icons.Outlined.Map,null);Spacer(Modifier.width(8.dp));Text("Explore transport map") }
+        OutlinedButton(onClick=onBudget,modifier=Modifier.fillMaxWidth()) { Text("Travel budget & fare corrections") }
+        BetaSettings(feature,features,onBuses,onTrips,onCommunity,onWhatsApp)
+        FeatureStatus(feature)
+        ProfileSettings(feature,features)
+        HostedSettings(feature,features)
         Card(shape = RoundedCornerShape(24.dp)) {
             Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text("Timetables & privacy", style = MaterialTheme.typography.titleLarge)

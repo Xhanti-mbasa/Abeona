@@ -34,7 +34,7 @@ internal fun stationDistance(station: StationPosition,point: GeoPoint): String {
     val spot=s.extras.spots.firstOrNull { place.id=="spot:${it.id}" }
     val ranked=remember(place.point,train.stations,train.catalog.stations) { StationChoices.ranked(place.point,train.stations,train.catalog.stations) }
     val matches=remember(ranked,query) { ranked.filter { it.name.contains(query,true) } }
-    ModalBottomSheet(onDismissRequest=onDismiss,sheetState=rememberModalBottomSheetState(skipPartiallyExpanded=true)) {
+    ModalBottomSheet(onDismissRequest=onDismiss,sheetState=rememberModalBottomSheetState(skipPartiallyExpanded=true),containerColor=MaterialTheme.colorScheme.surface,shape=AbeonaSpace.sheet) {
         LazyColumn(Modifier.fillMaxWidth().imePadding().testTag("journey-station-picker"),contentPadding=PaddingValues(16.dp),verticalArrangement=Arrangement.spacedBy(6.dp)) {
             item { StationPickerHeader(start,place.label,query,{ query=it.take(100) },spot?.name,rememberForSpot,{ rememberForSpot=it },{ onSelect(null,spot!=null && rememberForSpot) }) }
             items(matches,key={ stationKey(it.name) }) { station ->
@@ -49,7 +49,7 @@ internal fun stationDistance(station: StationPosition,point: GeoPoint): String {
 @Composable internal fun SaveJourneyPlace(place: WalkEndpoint,busy: Boolean,onDismiss: ()->Unit,onSave: (String,String)->Unit) {
     var name by remember { mutableStateOf("") }
     var tag by remember { mutableStateOf("Work") }
-    ModalBottomSheet(onDismissRequest=onDismiss,sheetState=rememberModalBottomSheetState(skipPartiallyExpanded=true)) {
+    ModalBottomSheet(onDismissRequest=onDismiss,sheetState=rememberModalBottomSheetState(skipPartiallyExpanded=true),containerColor=MaterialTheme.colorScheme.surface,shape=AbeonaSpace.sheet) {
         LazyColumn(Modifier.fillMaxWidth().imePadding(),contentPadding=PaddingValues(16.dp),verticalArrangement=Arrangement.spacedBy(8.dp)) {
             item { Text("Save this place",style=MaterialTheme.typography.titleLarge);Text(place.label,style=MaterialTheme.typography.bodySmall) }
             item { FlowRow(horizontalArrangement=Arrangement.spacedBy(6.dp)) { listOf("Home","Work","School","Friend","Custom").forEach { label -> FilterChip(tag==label,{ tag=label },label={ Text(label) }) } } }

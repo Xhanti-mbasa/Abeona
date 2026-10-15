@@ -34,13 +34,13 @@ class PreferredStationsUiTest {
     }
     @Test fun aPreferredStationIsOptionalAndSurvivesSwap() {
         app.runOnUiThread { features.place(WalkEndpoint("spot:${work.id}",work.name,work.point),true) }
-        app.onNodeWithTag("journey-planner").performScrollToNode(hasText("Choose station"));app.onNodeWithText("Choose station").performClick()
+        app.onNodeWithTag("journey-planner").performScrollToNode(hasTestTag("home-boarding-station"));app.onNodeWithTag("home-boarding-station").performClick()
         val ranked=StationChoices.ranked(work.point,train.state.value.stations,train.state.value.catalog.stations)
         app.onNodeWithTag("station-choice:${stationKey(ranked.first().name)}").assertIsDisplayed();UiScreenshots.save("preferred-station-suggestions")
         app.onNodeWithTag("journey-station-picker").performScrollToNode(hasTestTag("station-choice:${stationKey("Salt River")}"));app.onNodeWithTag("station-choice:${stationKey("Salt River")}").performClick()
         app.waitUntil(15000) { features.state.value.extras.spots.first { it.id==work.id }.preferredStation=="Salt River" }
         app.runOnUiThread { features.place(WalkEndpoint("spot:${home.id}",home.name,home.point),false,home.preferredStation) }
-        app.onNodeWithTag("journey-planner").performScrollToNode(hasText("Route preferences & providers"));app.onNodeWithText("Route preferences & providers").performClick()
+        app.onNodeWithTag("journey-planner").performScrollToNode(hasText("Walking & route preferences"));app.onNodeWithText("Walking & route preferences").performClick()
         app.onNodeWithText("Swap From and To").performScrollTo().performClick()
         app.runOnIdle { assertEquals("Unibell",features.state.value.boardingStation);assertEquals("Salt River",features.state.value.arrivalStation);assertEquals("Home",features.state.value.access?.label);assertEquals("Work",features.state.value.destination?.label) };UiScreenshots.save("work-salt-river-unibell-home")
     }
@@ -52,8 +52,8 @@ class PreferredStationsUiTest {
         app.waitUntil(15000) { features.state.value.extras.spots.firstOrNull { it.id==work.id }?.preferredStation=="Salt River" }
         app.runOnUiThread { features.place(null,true);features.place(WalkEndpoint("spot:${work.id}",work.name,work.point),true) }
         app.runOnIdle { assertEquals("Salt River",features.state.value.boardingStation) }
-        app.onNodeWithTag("journey-planner").performScrollToNode(hasText("Choose station"))
-        app.onNodeWithText("Choose station").performClick()
+        app.onNodeWithTag("journey-planner").performScrollToNode(hasTestTag("home-boarding-station"))
+        app.onNodeWithTag("home-boarding-station").performClick()
         app.onNodeWithText("Auto · find nearby usable stations").performClick()
         app.waitUntil(15000) { features.state.value.extras.spots.first { it.id==work.id }.preferredStation==null }
         app.runOnIdle { assertNull(features.state.value.boardingStation) }

@@ -19,7 +19,7 @@ val RoutineDayLabels=listOf("Mon","Tue","Wed","Thu","Fri","Sat","Sun")
     var reminder by remember(routine.id) { mutableStateOf(routine.reminderMinutes) }
     var time by remember(routine.id) { mutableStateOf(routine.query.time) }
     var pickingTime by remember { mutableStateOf(false) }
-    ModalBottomSheet(onDismissRequest=onDismiss,sheetState=rememberModalBottomSheetState(skipPartiallyExpanded=true)) {
+    ModalBottomSheet(onDismissRequest=onDismiss,sheetState=rememberModalBottomSheetState(skipPartiallyExpanded=true),containerColor=MaterialTheme.colorScheme.surface,shape=AbeonaSpace.sheet) {
         Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(20.dp).navigationBarsPadding().imePadding(),verticalArrangement=Arrangement.spacedBy(12.dp)) {
             Text("Recurring journey",style=MaterialTheme.typography.headlineSmall)
             Text("${routine.origin?.label ?: routine.query.from} → ${routine.destination?.label ?: routine.query.to}")

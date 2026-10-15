@@ -53,7 +53,7 @@ class QualityOfLifeUiTest {
         app.onNodeWithTag("nav:plan").performClick()
         val train=ViewModelProvider(app.activity)[TrainViewModel::class.java]
         app.runOnUiThread { train.edit { it.copy(from="",to="") } }
-        app.onNodeWithText("Change").performClick()
+        app.onNodeWithTag("home-origin").performClick()
         app.onNodeWithText("Where do you leave from?").assertIsDisplayed()
         app.onNodeWithText("Search places, stations or stops").performTextInput("Unibell")
         app.onNode(hasText("Unibell") and hasClickAction() and !hasSetTextAction()).performClick()
@@ -80,7 +80,7 @@ class QualityOfLifeUiTest {
         app.onNodeWithText("Collapse").performClick()
         app.onNodeWithTag("nav:plan").performClick()
         app.runOnUiThread { train.edit { it.copy(from="Unibell",to="Salt River") } }
-        app.onNodeWithTag("journey-planner").performScrollToNode(hasText("Route preferences & providers"));app.onNodeWithText("Route preferences & providers").performClick();app.waitForIdle();app.onNodeWithText("Your journey").assertIsDisplayed()
+        app.onNodeWithTag("journey-planner").performScrollToNode(hasText("Walking & route preferences"));app.onNodeWithText("Walking & route preferences").performClick();app.waitForIdle();app.onNodeWithText("Your journey").assertIsDisplayed()
         app.onNodeWithText("Mode of transport · Trains").performScrollTo().performClick()
         app.onNodeWithText("MyCiTi").performClick()
         app.onNodeWithText("Find MyCiTi routes").performScrollTo().assertIsDisplayed()
@@ -120,7 +120,7 @@ class QualityOfLifeUiTest {
         val campus=za.co.cttrains.core.WalkEndpoint("spot:campus","Campus",za.co.cttrains.core.GeoPoint(-33.93,18.46))
         app.runOnUiThread { train.edit { it.copy(from="Unibell",to="Salt River") };features.place(home,true);features.place(campus,false) }
         app.onNodeWithTag("nav:plan").performClick()
-        app.onNodeWithTag("journey-planner").performScrollToNode(hasText("Route preferences & providers"));app.onNodeWithText("Route preferences & providers").performClick();app.waitForIdle();app.onNodeWithText("Your journey").assertIsDisplayed()
+        app.onNodeWithTag("journey-planner").performScrollToNode(hasText("Walking & route preferences"));app.onNodeWithText("Walking & route preferences").performClick();app.waitForIdle();app.onNodeWithText("Your journey").assertIsDisplayed()
         app.onNodeWithText("Swap From and To").performScrollTo().performClick()
         app.runOnIdle { assertEquals(campus,features.state.value.access);assertEquals(home,features.state.value.destination);assertEquals("Salt River",train.state.value.from);assertEquals("Unibell",train.state.value.to) }
         app.onNodeWithText("Travel date").performScrollTo()

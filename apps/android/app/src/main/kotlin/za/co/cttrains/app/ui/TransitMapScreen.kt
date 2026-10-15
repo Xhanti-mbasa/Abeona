@@ -129,13 +129,13 @@ fun TransitMapScreen(state: TrainState, model: TrainViewModel, fullScreen: Boole
         uri.openUri(url)
     }
     BoxWithConstraints(Modifier.fillMaxSize()) {
-    val homeMapHeight=(maxHeight-160.dp).coerceAtLeast(400.dp)
+    val homeMapHeight=(maxHeight-250.dp).coerceIn(280.dp,520.dp)
     PullToRefreshBox(isRefreshing=state.refreshing || feature.loading.isNotEmpty(),onRefresh={ if(!fullScreen) refresh() },modifier=Modifier.fillMaxSize()) {
-    Column(Modifier.fillMaxSize().then(if (fullScreen) Modifier.windowInsetsPadding(WindowInsets.safeDrawing) else Modifier.verticalScroll(rememberScrollState())).padding(horizontal = if (fullScreen) 0.dp else 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    Column(Modifier.fillMaxSize().then(if (fullScreen) Modifier.windowInsetsPadding(WindowInsets.safeDrawing) else Modifier.verticalScroll(rememberScrollState())).padding(horizontal = if (fullScreen) 0.dp else 20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         if (!fullScreen) {
         Row(Modifier.fillMaxWidth().padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
-                Text("Where to next?", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+                Text("Explore", style = MaterialTheme.typography.headlineLarge)
                 Text("Cape Town & the Western Cape", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             FilledTonalIconButton(onClick = {
