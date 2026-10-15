@@ -1,0 +1,23 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"urn:abeona:contracts:provider-response:v1",
+  "title":"Abeona provider provenance v1",
+  "type":"object",
+  "required":["provenance"],
+  "properties":{
+    "provenance":{
+      "type":"object",
+      "required":["provider","kind","fetchedAt","publishedAt","cached","sourceAvailable"],
+      "properties":{
+        "provider":{"type":"string"},
+        "kind":{"enum":["scheduled","live","survey","mixed"]},
+        "fetchedAt":{"type":"integer","minimum":0},
+        "publishedAt":{"type":["integer","null"],"minimum":0},
+        "cached":{"type":"boolean"},
+        "sourceAvailable":{"type":"boolean"}
+      },
+      "additionalProperties":true
+    }
+  },
+  "additionalProperties":true
+}

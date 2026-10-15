@@ -1,0 +1,75 @@
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class,androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+package za.co.cttrains.app.ui
+
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.*
+import za.co.cttrains.app.R
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.unit.dp
+import java.util.Locale
+import za.co.cttrains.app.*
+import za.co.cttrains.core.*
+
+internal fun stationDistance(station: StationPosition,point: GeoPoint): String {
+    val meters=NearbySuggestions.distance(point,WalkingRoutes.endpoint(station).point)
+    return if(meters<1000) "${meters.toInt()} m away" else String.format(Locale.ENGLISH,"%.1f km away",meters/1000)
+}
+
+@Composable internal fun JourneyStationField(start: Boolean,chosen: String?,place: WalkEndpoint?,train: TrainState,onChoose: ()->Unit,onStationOnly: ()->Unit) {
+    val suggested=remember(place,train.stations,train.catalog.stations) { place?.let { StationChoices.ranked(it.point,train.stations,train.catalog.stations).firstOrNull() } }
+    OutlinedButton(onClick=onChoose,modifier=Modifier.fillMaxWidth().testTag(if(start) "boarding-station" else "arrival-station")) {
+        Text("${if(start) "Board at" else "Get off at"} · ${chosen ?: "Choose station"}")
+    }
+    if(chosen==null) Text(suggested?.let { "Closest suggestion: ${it.name} · ${stationDistance(it,place!!.point)}. Choose any station you prefer." } ?: "Choose your preferred train station.",style=MaterialTheme.typography.bodySmall)
+    TextButton(onClick=onStationOnly) { Text(if(start) "Start at the station instead" else "End at the station instead") }
+}
+
+@Composable internal fun JourneyStationPicker(place: WalkEndpoint,train: TrainState,s: FeatureState,start: Boolean,chosen: String?,onDismiss: ()->Unit,onSelect: (String?,Boolean)->Unit) {
+    var query by remember { mutableStateOf("") }
+    var rememberForSpot by remember(place.id) { mutableStateOf(true) }
+    val spot=s.extras.spots.firstOrNull { place.id=="spot:${it.id}" }
+    val ranked=remember(place.point,train.stations,train.catalog.stations) { StationChoices.ranked(place.point,train.stations,train.catalog.stations) }
+    val matches=remember(ranked,query) { ranked.filter { it.name.contains(query,true) } }
+    ModalBottomSheet(onDismissRequest=onDismiss,sheetState=rememberModalBottomSheetState(skipPartiallyExpanded=true),containerColor=MaterialTheme.colorScheme.surface,shape=AbeonaSpace.sheet) {
+        LazyColumn(Modifier.fillMaxWidth().imePadding().testTag("journey-station-picker"),contentPadding=PaddingValues(20.dp),verticalArrangement=Arrangement.spacedBy(8.dp)) {
+            item { StationPickerHeader(start,place.label,query,{ query=it.take(100) },spot?.name,rememberForSpot,{ rememberForSpot=it },{ onSelect(null,spot!=null && rememberForSpot) }) }
+            items(matches,key={ stationKey(it.name) }) { station ->
+                val selected=stationKey(station.name)==chosen?.let(::stationKey)
+                ListItem(leadingContent={ DesignIcon(R.drawable.abeona_train_front,tint=if(selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant) },trailingContent={ RadioButton(selected,onClick=null) },colors=ListItemDefaults.colors(containerColor=if(selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface),headlineContent={ Text(station.name,style=MaterialTheme.typography.titleMedium) },supportingContent={ Text("${stationDistance(station,place.point)}${if(station==ranked.firstOrNull()) " · closest" else ""}${if(stationKey(station.name)==chosen?.let(::stationKey)) " · selected" else ""}") },
+                    modifier=Modifier.clip(RoundedCornerShape(19.dp)).heightIn(min=65.dp).testTag("station-choice:${stationKey(station.name)}").clickable { onSelect(station.name,spot!=null && rememberForSpot) })
+            }
+            if(matches.isEmpty()) item { Text("No mapped station matched. Try another name or refresh the station catalogue.") }
+        }
+    }
+}
+
+@Composable internal fun SaveJourneyPlace(place: WalkEndpoint,busy: Boolean,onDismiss: ()->Unit,onSave: (String,String)->Unit) {
+    var name by remember { mutableStateOf("") }
+    var tag by remember { mutableStateOf("Work") }
+    ModalBottomSheet(onDismissRequest=onDismiss,sheetState=rememberModalBottomSheetState(skipPartiallyExpanded=true),containerColor=MaterialTheme.colorScheme.surface,shape=AbeonaSpace.sheet) {
+        LazyColumn(Modifier.fillMaxWidth().imePadding(),contentPadding=PaddingValues(16.dp),verticalArrangement=Arrangement.spacedBy(8.dp)) {
+            item { Text("Save this place",style=MaterialTheme.typography.titleLarge);Text(place.label,style=MaterialTheme.typography.bodySmall) }
+            item { FlowRow(horizontalArrangement=Arrangement.spacedBy(6.dp)) { listOf("Home","Work","School","Friend","Custom").forEach { label -> FilterChip(tag==label,{ tag=label },label={ Text(label) }) } } }
+            item { OutlinedTextField(name,{ name=it.take(100) },label={ Text("Place name · defaults to $tag") },singleLine=true,modifier=Modifier.fillMaxWidth()) }
+            item { Text("Saved locally with your chosen station. You can change the station for any journey.",style=MaterialTheme.typography.bodySmall) }
+            item { Button(onClick={ onSave(name.trim().ifBlank { tag },tag) },enabled=!busy,modifier=Modifier.fillMaxWidth()) { Text("Save place") } }
+        }
+    }
+}
+
+@Composable private fun StationPickerHeader(start: Boolean,place: String,query: String,onQuery: (String)->Unit,spotName: String?,save: Boolean,onSave: (Boolean)->Unit,onAuto: ()->Unit) {
+    AbeonaHeading("Choose a station","Suggestions are optional. Your choice stays.")
+    Text("$place · sorted by straight-line distance",style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant)
+    OutlinedTextField(query,onQuery,label={ Text("Search stations") },leadingIcon={ DesignIcon(R.drawable.abeona_search) },shape=RoundedCornerShape(25.dp),singleLine=true,modifier=Modifier.fillMaxWidth())
+    if(spotName!=null) Row(Modifier.fillMaxWidth().clickable { onSave(!save) }) { Checkbox(save,onSave);Text("Remember station for $spotName",modifier=Modifier.padding(top=12.dp)) }
+    TextButton(onClick=onAuto) { Text("Auto · find nearby usable stations") }
+}

@@ -1,0 +1,77 @@
+{
+  "appCommit": "beb6f9668f27936a2a8ba1010e6b3520010bc01a",
+  "androidWorkflow": 38788704254,
+  "nativePixels": [
+    1080,
+    2343
+  ],
+  "densityDpi": 440,
+  "comparisonViewportDp": [
+    393,
+    852
+  ],
+  "captures": [
+    {
+      "comparison": "light-plan.webp",
+      "nativeCapture": "abeona-home-light.png",
+      "nativeSha256": "1b08b11747c78a56734cc5db8665d425d4c3b30cc516b22efdb80ed61517ce19",
+      "reference": "light-plan.png",
+      "referenceSha256": "f1e35c219172e9f69e766e33f2fd065a0df374c1ff2398bf30e722503f924832"
+    },
+    {
+      "comparison": "light-results.webp",
+      "nativeCapture": "abeona-live-results-light.png",
+      "nativeSha256": "bf3be13fdbbedcde6b95f455ca101c1a2b7101d4d277c1404e9b9d900c1ace44",
+      "reference": "light-results.png",
+      "referenceSha256": "47a4c3f91e2495b313e09c05f21f8d9c7d4bef7982555743555ad572dadfa4e5"
+    },
+    {
+      "comparison": "light-active.webp",
+      "nativeCapture": "abeona-active-light.png",
+      "nativeSha256": "359cb975adcba78f5e336f8635f7742b0becf0c5926f5658b2b49e9a3deca7b6",
+      "reference": "light-active.png",
+      "referenceSha256": "c9094eb6e0ef1bc31b5467211327af38cf11391f04cb9cf43aa9fd9c7720cfd0"
+    },
+    {
+      "comparison": "dark-plan.webp",
+      "nativeCapture": "abeona-home-dark.png",
+      "nativeSha256": "996a1fd3f386861660134ca8b49f5c11fc65fb4b2d68c4296146c2f78941fa4e",
+      "reference": "dark-plan.png",
+      "referenceSha256": "d37492079aab2b527fab2d7fbd1e5067a30e9d690ada25cbd03325c939a57866"
+    },
+    {
+      "comparison": "dark-results.webp",
+      "nativeCapture": "abeona-live-results-dark.png",
+      "nativeSha256": "2e0eb6cc6cc3fad492520be6cde9044f5de649505502f5528c9ac4ba224c5ead",
+      "reference": "dark-results.png",
+      "referenceSha256": "a0d93fe3ee3ce7542952036c691d34f07fa28a729c2545d8bc4dceaca15335bc"
+    },
+    {
+      "comparison": "dark-active.webp",
+      "nativeCapture": "abeona-active-dark.png",
+      "nativeSha256": "378fd5c56ddc72681b34f086b3af347cb743e917ec3aa422a900bf3799d26e59",
+      "reference": "dark-active.png",
+      "referenceSha256": "30ca3aac0460e5691cb3affdf1612bf82e0fa7b19b02ec7f6ceb26b702f77d11"
+    },
+    {
+      "comparison": "light-saved.webp",
+      "nativeCapture": "abeona-saved-light.png",
+      "nativeSha256": "15f8c05390b7a8c805655c12a4193bceaa0ef597f737bc116503253a698da0db",
+      "reference": "light-saved.png",
+      "referenceSha256": "21c6be9f222a0b2f40b4c4a03259058cb1c42ce7ac9165ef72aff59dbc1a6887"
+    },
+    {
+      "comparison": "light-settings.webp",
+      "nativeCapture": "abeona-settings-light.png",
+      "nativeSha256": "c1394b5a22a1e5607a277db7f47757719ce45cbd1371d02158dd887ec1ea82b6",
+      "reference": "light-settings.png",
+      "referenceSha256": "6efc48ae8d5b415ebc8e4aa36f767602cd8e3be79584cc964645bb4002c715af"
+    },
+    {
+      "comparison": "large-text-navigation.webp",
+      "nativeCapture": "one-ui-320dp-200percent-text.png",
+      "nativeSha256": "618460a4db1aa64d2b7118d9081d27187997eafac586f0e168f10830c54ba656",
+      "scope": "320 x 640 dp component harness at 200 percent font scale"
+    }
+  ]
+}

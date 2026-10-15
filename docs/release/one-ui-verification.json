@@ -1,0 +1,63 @@
+{
+  "file": "Abeona-1.12.0-build.20-development-upgrade.apk",
+  "bytes": 67437954,
+  "sha256": "ad4be6e79fc86069483e60d0a191a5ca68d8c3e745a6586a65f699cea320bfef",
+  "zipIntegrity": "passed",
+  "apksignerVerification": "passed",
+  "package": "za.co.cttrains.app",
+  "versionCode": 1220,
+  "versionName": "1.12.0-build.20",
+  "targetSdk": 36,
+  "debuggable": false,
+  "signing": "development upgrade",
+  "certificateSha256": "212f7f9a7e6cb9ccff3e4c7c20512b993d83a661329e6cd6213612ef7e4dbbdc",
+  "matchesPreviousInstallableCertificate": true,
+  "previousCertificateReference": "Abeona-1.11.0-build.10-development-upgrade.apk",
+  "physicalDeviceUpgradeTest": "not run",
+  "applicationPayloadUnchangedBySigning": true,
+  "ciApkSha256": "03c7878fe9df9d2612bd6a76e7ac08823ca2249e57f6ed496be46ea4f8d73c7f",
+  "apk16KiBNativeAlignment": "passed",
+  "appCommit": "beb6f9668f27936a2a8ba1010e6b3520010bc01a",
+  "ciMergeCommit": "a68eab044282f05f8f5e7ae6f178cbb87628d626",
+  "androidWorkflow": 38788704254,
+  "backendWorkflow": 38788704164,
+  "coreTestsPassed": 157,
+  "pdfTestsPassed": 2,
+  "nodeTestsPassed": 29,
+  "nativeTests": [
+    {
+      "configuration": "run20-play35",
+      "tests": 31,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "configuration": "run20-github-debug",
+      "tests": 31,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "configuration": "run20-github-release",
+      "tests": 27,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "configuration": "run20-android-device-reports-play-36-16384-debug",
+      "tests": 31,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  ],
+  "nativeExecutionsPassed": 120,
+  "lintVariantsPassed": 4,
+  "savedDownloadReadbackVerified": true,
+  "savedDownloadReadbackSha256": "ad4be6e79fc86069483e60d0a191a5ca68d8c3e745a6586a65f699cea320bfef",
+  "databaseSchemaUnchanged": true,
+  "providersUnchanged": true
+}

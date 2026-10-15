@@ -1,0 +1,10 @@
+.git
+**/build
+**/.gradle
+**/node_modules
+**/local.properties
+.env
+.env.*
+**/*.jks
+**/*.keystore
+workers/scrapers/data

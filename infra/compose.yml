@@ -1,0 +1,33 @@
+services:
+  api:
+    build:
+      context: ..
+      dockerfile: infra/api.Dockerfile
+    ports: ["127.0.0.1:${PORT:-3000}:3000"]
+    environment:
+      PORT: 3000
+      NODE_ENV: production
+      RATE_LIMIT_RPM: ${RATE_LIMIT_RPM:-60}
+      SCRAPER_URL: http://scrapers:8081
+      REDIS_URL: redis://redis:6379/0
+    depends_on: [redis, scrapers]
+    restart: unless-stopped
+    volumes: ["snapshots:/app/services/api/.timetable-snapshots"]
+  scrapers:
+    build:
+      context: ..
+      dockerfile: infra/scrapers.Dockerfile
+    environment:
+      SCRAPER_BIND: 0.0.0.0
+      SCRAPER_DATA_DIR: /data
+    volumes: ["scraper_data:/data"]
+    restart: unless-stopped
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "128mb", "--maxmemory-policy", "allkeys-lru"]
+    volumes: ["redis_data:/data"]
+    restart: unless-stopped
+volumes:
+  redis_data:
+  snapshots:
+  scraper_data:

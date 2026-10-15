@@ -1,0 +1,30 @@
+name: Backend contracts and containers
+on:
+  pull_request:
+    paths: ["services/**", "workers/**", "packages/**", "fixtures/**", "infra/**", "package*.json", ".github/workflows/backend.yml"]
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci --ignore-scripts && npm test
+      - name: Validate deployment layout and build images
+        run: docker compose -f infra/compose.yml config --quiet && docker compose -f infra/compose.yml build
+      - name: Verify API and worker health over the actual container network
+        run: |
+          docker compose -f infra/compose.yml up -d
+          for i in {1..30}; do curl --fail --silent http://127.0.0.1:3000/health && break; sleep 2; done
+          curl --fail --silent http://127.0.0.1:3000/health
+          curl --fail --silent http://127.0.0.1:3000/mobile/v1/providers
+          docker compose -f infra/compose.yml exec -T api node -e "fetch('http://scrapers:8081/health').then(r=>{if(!r.ok) process.exit(1);return r.json()}).then(x=>{if(x.status!=='ok') process.exit(1);console.log(JSON.stringify(x))})"
+      - if: always()
+        run: docker compose -f infra/compose.yml logs --no-color && docker compose -f infra/compose.yml down

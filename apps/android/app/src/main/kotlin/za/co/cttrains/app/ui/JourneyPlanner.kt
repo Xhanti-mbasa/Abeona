@@ -1,0 +1,397 @@
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class,androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+package za.co.cttrains.app.ui
+
+import android.Manifest
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import za.co.cttrains.app.R
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.*
+import androidx.compose.ui.Alignment
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.CancellationException
+import java.time.Instant
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
+import za.co.cttrains.app.*
+import za.co.cttrains.core.*
+
+@Composable fun JourneyPlanner(train: TrainState,model: TrainViewModel,s: FeatureState,m: FeatureViewModel,onSettings: ()->Unit) {
+    val planner: JourneyPlannerModel=androidx.lifecycle.viewmodel.compose.viewModel()
+    val directions: za.co.cttrains.app.directions.DirectionsModel=androidx.lifecycle.viewmodel.compose.viewModel()
+    val result by planner.state.collectAsStateWithLifecycle()
+    var mode by rememberSaveable(s.plannerMode) { mutableStateOf(s.plannerMode) }
+    var selected by rememberSaveable { mutableStateOf(TransportService.values().map { it.name }) }
+    var picker by remember { mutableStateOf<Boolean?>(null) }
+    var stationPicker by remember { mutableStateOf<Boolean?>(null) }
+    var savePlace by remember { mutableStateOf<Boolean?>(null) }
+    var finalStation by remember { mutableStateOf<String?>(null) }
+    var consent by remember { mutableStateOf(false) }
+    var onlineWalks by rememberSaveable { mutableStateOf(false) }
+    var advanced by rememberSaveable { mutableStateOf(false) }
+    var showResults by rememberSaveable { mutableStateOf(false) }
+    var editTrip by remember { mutableStateOf(false) }
+    var selectedId by rememberSaveable { mutableStateOf<String?>(null) }
+    var maxWalk by rememberSaveable { mutableStateOf(1500) }
+    var autoWalk by rememberSaveable { mutableStateOf(true) }
+    var datePicker by remember { mutableStateOf(false) }
+    var timePicker by remember { mutableStateOf(false) }
+    var manual by rememberSaveable { mutableStateOf(false) }
+    var scheduled by remember { mutableStateOf<PlannerOption?>(null) }
+    var date by rememberSaveable(train.date) { mutableStateOf(train.date) }
+    var time by rememberSaveable(train.time) { mutableStateOf(train.time) }
+    val from=s.access ?: train.stations.firstOrNull { it.mapped && stationKey(it.name)==stationKey(train.from) }?.let(WalkingRoutes::endpoint)
+    val to=s.destination ?: train.stations.firstOrNull { it.mapped && stationKey(it.name)==stationKey(train.to) }?.let(WalkingRoutes::endpoint)
+    val services=if(mode=="compare") TransportService.values().filter { it.name in selected }.toSet() else setOf(TransportService.valueOf(mode))
+    val rail=TransportService.PRASA in services
+    val board=if(s.access==null) train.from else s.boardingStation
+    val arrive=if(s.destination==null) train.to else s.arrivalStation
+    fun runSearch() {
+        when {
+            from==null || to==null -> planner.invalid("Choose a starting point and destination.")
+            from==to -> planner.invalid("Choose different starting and arrival stations or places.")
+            services.isEmpty() -> planner.invalid("Choose at least one transport provider.")
+            else -> planner.find(PlannerRequest(from,to,date,time,services,onlineWalks,if(autoWalk) 5000 else maxWalk,board,arrive),train)
+        }
+    }
+    LaunchedEffect(from,to,board,arrive,date,time,mode,selected,onlineWalks,maxWalk,autoWalk,train.preferences.sourceId,s.extras.beta.goldenArrow,s.extras.beta.myCiti,showResults) { if(showResults) runSearch() else planner.clear() }
+    BackHandler(showResults && !editTrip && !manual) { showResults=false }
+    val options=result.sections.values.flatMap { it.options }
+    val selectedOption=options.firstOrNull { it.id==selectedId } ?: options.firstOrNull()
+    fun startOption(option: PlannerOption) { directions.preview({ za.co.cttrains.app.directions.DirectionsPlans.option(option,train,s) }) {
+        if(option.rail!=null) { m.showTrainMap();m.usePlannedWalks(option.walks);model.presentPlannedJourney(option.query!!,option.rail,option.fetchedAt,option.cached,null,option.sourceId,false) }
+        else { model.selectJourney(null);m.selectBus(option.bus!!);m.usePlannedWalks(option.walks) }
+        model.openDirections()
+    } }
+    if(manual && mode!="compare" && mode!="PRASA") Column(Modifier.fillMaxSize()) { TextButton(onClick={ manual=false }) { Text("Journey planner") };BusPlanner(train,model,s,m,TransportService.valueOf(mode)) { model.openMap() } }
+    else if(!showResults) AbeonaHome(train,model,s,m,from,to,board,arrive,date,time,mode,{ mode=it;manual=false },{ mode="compare";editTrip=true },{ picker=false },{ picker=true },{ m.swapPlaces();model.edit { it.copy(from=it.to,to=it.from) } },{ datePicker=true },{ timePicker=true },{ stationPicker=it },{ editTrip=true },{ showResults=true })
+    else Column(Modifier.fillMaxSize().testTag("route-results")) {
+        LazyColumn(Modifier.weight(1f),contentPadding=PaddingValues(20.dp),verticalArrangement=Arrangement.spacedBy(14.dp)) {
+            item { Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.Top) { Column(Modifier.weight(1f)) { AbeonaHeading("Your routes","${from?.label.orEmpty()} → ${to?.label.orEmpty()}");Text("${runCatching { LocalDate.parse(date).format(DateTimeFormatter.ofPattern("EEE, d MMM")) }.getOrDefault(date)} · after $time",style=MaterialTheme.typography.bodySmall) };IconButton(onClick={ editTrip=true }) { Icon(Icons.Outlined.Edit,"Edit journey") } } }
+        item { Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),horizontalArrangement=Arrangement.spacedBy(8.dp)) {
+            TransportService.values().forEach { service-> FilterChip(selected=service in services,onClick={ mode=service.name },label={ Text(service.title) },shape=androidx.compose.foundation.shape.RoundedCornerShape(24.dp),modifier=Modifier.heightIn(min=48.dp),colors=FilterChipDefaults.filterChipColors(containerColor=MaterialTheme.colorScheme.surface,selectedContainerColor=MaterialTheme.colorScheme.primaryContainer,selectedLabelColor=MaterialTheme.colorScheme.onPrimaryContainer),border=null) }
+        } }
+        if(result.loading) item { LinearProgressIndicator(Modifier.fillMaxWidth());Text(result.progress,style=MaterialTheme.typography.labelSmall) }
+        result.error?.let { error -> item { Text(error,color=MaterialTheme.colorScheme.error) } }
+        if(!result.loading && (result.error!=null || result.sections.values.any { it.options.isEmpty() })) item {
+            OutlinedButton(onClick={ runSearch() },modifier=Modifier.testTag("retry-journey-search")) { Text("Try again") }
+        }
+        val complete=result.sections.values.flatMap { it.options }.filter { it.estimate.totalMinutes!=null && it.service!=TransportService.GOLDEN_ARROW }
+        val fastest=if(!result.loading) complete.minByOrNull { it.estimate.totalMinutes!! }?.id else null
+        services.forEach { service ->
+            val section=result.sections[service]
+            if(!s.extras.beta.enabled(service)) item {
+                Card(Modifier.fillMaxWidth()) { Column(Modifier.padding(14.dp)) { Text("${service.title} is disabled",style=MaterialTheme.typography.titleMedium);TextButton(onClick=onSettings) { Text("Enable in Beta features") } } }
+            } else if(section!=null) {
+                if(services.size>1) item { Text(service.title,style=MaterialTheme.typography.titleMedium,fontWeight=FontWeight.Bold) }
+                if(section.options.isEmpty()) item {
+                    Text(section.issue ?: "No supported journey found.",style=MaterialTheme.typography.bodyMedium)
+                    if(service!=TransportService.PRASA) TextButton(onClick={ mode=service.name;manual=true;m.chooseBus(service) }) { Text("Manual bus setup") }
+                }
+                items(section.candidates,key={ "candidate:${it.timetable.route.id}" }) { candidate ->
+                    val timetable=candidate.timetable
+                    val uri=LocalUriHandler.current
+                    OutlinedCard(Modifier.fillMaxWidth()) { Column(Modifier.padding(14.dp),verticalArrangement=Arrangement.spacedBy(6.dp)) {
+                        Text(timetable.route.title,style=MaterialTheme.typography.titleMedium)
+                        Text("Possible route · surveyed corridor near both places",style=MaterialTheme.typography.labelMedium)
+                        Text("${timetable.day} · ${if(candidate.cached) "Saved timetable" else "Checked"} ${checked(timetable.fetchedAt)}",style=MaterialTheme.typography.labelSmall)
+                        Text("${timetable.trips.count { trip->trip.calls.lastOrNull()?.time.orEmpty()>=time }} published trips remaining in this timetable. Your roadside boarding time is not supplied.",style=MaterialTheme.typography.bodySmall)
+                        FlowRow(horizontalArrangement=Arrangement.spacedBy(6.dp)) {
+                            TextButton(onClick={ mode=service.name;manual=true;m.chooseBus(service);m.timetable(timetable.route,timetable.day) }) { Text("Choose published timed stops") }
+                            TextButton(onClick={ uri.openUri(timetable.route.url) }) { Text("View operator PDF") }
+                        }
+                    } }
+                }
+                items(section.options.take(if(mode=="compare") 3 else 12),key={ it.id }) { option ->
+                    PlannerJourneyCard(option,option.id==fastest,s,model,m,selected=option.id==selectedOption?.id,onSelect={ selectedId=option.id },onDirections={ directions.preview({ za.co.cttrains.app.directions.DirectionsPlans.option(option,train,s) }) {
+                        if(option.rail!=null) { m.showTrainMap();m.usePlannedWalks(option.walks);model.presentPlannedJourney(option.query!!,option.rail,option.fetchedAt,option.cached,null,option.sourceId,false) }
+                        else { model.selectJourney(null);m.selectBus(option.bus!!);m.usePlannedWalks(option.walks) }
+                        model.openDirections()
+                    } },onSchedule={
+                        model.presentPlannedJourney(option.query!!,option.rail!!,option.fetchedAt,option.cached,option.fares.firstOrNull()?.let { "Single ${money(it.cents)}" },option.sourceId,false);scheduled=option
+                    },onView={
+                        if(option.rail!=null) { m.showTrainMap();m.usePlannedWalks(option.walks);model.presentPlannedJourney(option.query!!,option.rail,option.fetchedAt,option.cached,option.fares.firstOrNull()?.let { "Single ${money(it.cents)}" },option.sourceId) }
+                        else { model.selectJourney(null);m.selectBus(option.bus!!);m.usePlannedWalks(option.walks);model.openMap() }
+                    })
+                }
+                if(section.options.isNotEmpty() && section.issue!=null) item { Text(section.issue,style=MaterialTheme.typography.labelSmall) }
+            }
+        }
+        if(result.sections.isNotEmpty()) item { Text("Fastest found applies only to complete, timed routes checked here. Bus transfers and unconfirmed survey points are excluded from that claim.",style=MaterialTheme.typography.bodySmall) }
+        if(mode!="compare" && mode!="PRASA" && s.extras.beta.enabled(TransportService.valueOf(mode))) item { TextButton(onClick={ manual=true;m.chooseBus(TransportService.valueOf(mode)) }) { Text("Manual bus setup · boarding & drop-off stops") } }
+        }
+        if(selectedOption!=null) Button(onClick={ startOption(selectedOption) },modifier=Modifier.fillMaxWidth().padding(horizontal=20.dp,vertical=12.dp).heightIn(min=56.dp).testTag("start-selected-journey")) { Text("Start journey") }
+    }
+    if(editTrip) ModalBottomSheet(onDismissRequest={ editTrip=false },sheetState=rememberModalBottomSheetState(skipPartiallyExpanded=true),containerColor=MaterialTheme.colorScheme.surface,shape=AbeonaSpace.sheet) {
+        LazyColumn(Modifier.fillMaxWidth().imePadding(),contentPadding=PaddingValues(20.dp),verticalArrangement=Arrangement.spacedBy(12.dp)) {
+        item {
+            Text("Your journey",style=MaterialTheme.typography.headlineSmall)
+            ModeOfTransport(mode) { mode=it;manual=false }
+            if(mode=="compare") FlowRow(horizontalArrangement=Arrangement.spacedBy(6.dp)) {
+                TransportService.values().forEach { service -> FilterChip(service.name in selected,{ selected=if(service.name in selected) selected-service.name else selected+service.name },label={ Text(service.title) }) }
+            }
+        }
+        item {
+            JourneyPlaceField("From",from?.label ?: "Choose your start") { picker=true }
+            if(rail && s.access!=null) JourneyStationField(true,board,from,train,{ stationPicker=true },{ m.place(null,true) })
+            if(s.access!=null && !s.access.id.startsWith("spot:")) TextButton(onClick={ savePlace=true }) { Text("Save start as Home, Work or another place") }
+        }
+        item {
+            TextButton(onClick={ m.swapPlaces();model.edit { it.copy(from=it.to,to=it.from) } },enabled=from!=null && to!=null,modifier=Modifier.fillMaxWidth()) { Text("Swap From and To") }
+        }
+        item {
+            JourneyPlaceField("To",to?.label ?: "Choose your destination") { picker=false }
+            if(rail && s.destination!=null) JourneyStationField(false,arrive,to,train,{ stationPicker=false },{ m.place(null,false) })
+            if(s.destination!=null && !s.destination.id.startsWith("spot:")) TextButton(onClick={ savePlace=false }) { Text("Save destination as Home, Work or another place") }
+            if(rail && s.destination==null) train.stations.firstOrNull { it.mapped && stationKey(it.name)==arrive?.let(::stationKey) }?.let { station ->
+                val nearby=remember(station,s.extras.spots) { StationChoices.nearbyPlaces(station,s.extras.spots) }
+                Text("After ${station.name}",style=MaterialTheme.typography.labelLarge,modifier=Modifier.padding(top=8.dp))
+                if(nearby.isNotEmpty()) {
+                    Text("Walk to a saved place",style=MaterialTheme.typography.bodySmall)
+                    FlowRow(horizontalArrangement=Arrangement.spacedBy(6.dp)) { nearby.take(3).forEach { spot ->
+                        AssistChip(onClick={ m.place(WalkEndpoint("spot:${spot.id}",spot.name,spot.point),false,station.name) },label={ Text("${spot.name} · ${stationDistance(station,spot.point)}") },modifier=Modifier.testTag("final-spot:${spot.id}"))
+                    } }
+                }
+                TextButton(onClick={ finalStation=station.name;picker=false }) { Text("Choose final address or saved place") }
+                if(nearby.isNotEmpty()) Text("Distances above are straight-line proximity. Walking estimates use mapped paths.",style=MaterialTheme.typography.labelSmall)
+            }
+        }
+        item {
+            Row(horizontalArrangement=Arrangement.spacedBy(10.dp)) {
+                OutlinedButton(onClick={ datePicker=true },modifier=Modifier.weight(1f)) { Column { Text("Travel date",style=MaterialTheme.typography.labelSmall);Text(date) } }
+                OutlinedButton(onClick={ timePicker=true },modifier=Modifier.weight(1f)) { Column { Text("Leave after",style=MaterialTheme.typography.labelSmall);Text(time) } }
+            }
+            FlowRow(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(6.dp)) {
+                TextButton(onClick={ if(onlineWalks) onlineWalks=false else consent=true }) { Text(if(onlineWalks) "Walking estimates: on" else "Enable walking estimates") }
+                TextButton(onClick={ advanced=!advanced }) { Text(if(advanced) "Less" else "Options") }
+            }
+            if(advanced) {
+                Text("How far are you willing to walk to a stop?",style=MaterialTheme.typography.labelLarge)
+                FlowRow(horizontalArrangement=Arrangement.spacedBy(6.dp)) {
+                    FilterChip(autoWalk,{ autoWalk=true },label={ Text("Auto estimate") })
+                    listOf(500,1000,1500,3000,5000).forEach { distance -> FilterChip(!autoWalk && maxWalk==distance,{ autoWalk=false;maxWalk=distance },label={ Text("${distance} m") }) }
+                }
+                Text(if(autoWalk) "We look for nearby usable stops within 5 km, calculate each mapped walk and rank the journeys. You can set a shorter limit." else "This limit applies separately to the walk before boarding and after getting off.",style=MaterialTheme.typography.bodySmall)
+                if(TransportService.PRASA in services) SourceSelector(train,model)
+                Text("Comparison starts at the same leave-after time and includes walks, waiting and a five-minute boarding buffer. Without a mapped walk, the door-to-door time stays unknown.",style=MaterialTheme.typography.bodySmall)
+            }
+            val valid=from!=null && to!=null && from!=to && runCatching { LocalDate.parse(date);LocalTime.parse(time) }.isSuccess && services.isNotEmpty()
+            Button(onClick={ showResults=true;editTrip=false;runSearch() },enabled=valid && !result.loading,modifier=Modifier.fillMaxWidth().heightIn(min=52.dp).testTag("preferences-find-routes")) {
+                Text(if(result.loading) "Finding routes…" else if(mode=="compare") "Compare routes" else when(mode) { "PRASA"->"Find trains";"MYCITI"->"Find MyCiTi routes";else->"Find Golden Arrow routes" })
+            }
+            if(!onlineWalks) Text("Timetables can be checked now. Enable walking estimates to calculate access and final walks.",style=MaterialTheme.typography.bodySmall)
+        }
+        }
+    }
+    picker?.let { start -> JourneyPlacePicker(train,model,s,m,start,{ picker=null;finalStation=null }) { endpoint ->
+        if(endpoint.id.startsWith("station:")) { m.place(null,start);model.edit { if(start) it.copy(from=endpoint.label) else it.copy(to=endpoint.label) } }
+        else {
+            val explicit=if(!start) finalStation else null
+            m.place(endpoint,start,explicit)
+            val chosen=if(start) m.state.value.boardingStation else m.state.value.arrivalStation
+            val suggestion=chosen ?: StationChoices.ranked(endpoint.point,train.stations,train.catalog.stations).firstOrNull()?.name
+            suggestion?.let { name -> model.edit { if(start) it.copy(from=name) else it.copy(to=name) } }
+
+        }
+        finalStation=null
+        picker=null
+        if(!editTrip) {
+            if(!start && from==null) picker=true
+            else if((start && to!=null) || (!start && from!=null)) showResults=true
+        }
+    } }
+    stationPicker?.let { start ->
+        val endpoint=if(start) from else to
+        if(endpoint!=null) JourneyStationPicker(endpoint,train,s,start,if(start) board else arrive,{ stationPicker=null }) { name,remember ->
+            m.chooseStation(name,start,remember)
+            val suggestion=name ?: StationChoices.ranked(endpoint.point,train.stations,train.catalog.stations).firstOrNull()?.name
+            suggestion?.let { value -> model.edit { if(start) it.copy(from=value) else it.copy(to=value) } }
+            stationPicker=null
+        }
+    }
+    savePlace?.let { start -> (if(start) s.access else s.destination)?.let { endpoint ->
+        SaveJourneyPlace(endpoint,s.busy,{ savePlace=null }) { name,tag -> m.saveJourneyPlace(endpoint,start,name,tag);savePlace=null }
+    } }
+    scheduled?.let { option -> JourneyScheduleSheet(option.query!!,option.rail!!,model,initialAccess=option.walks.firstOrNull { it.from==from }?.minutes ?: if(from?.id?.startsWith("station:")==true) 0 else 20,initialLeaveFrom=from?.label.orEmpty(),accessEndpoint=from,initialWalk=option.walks.firstOrNull { it.from==from }) { scheduled=null } }
+    if(datePicker) TravelDatePicker(date,train.catalog.holidays,{ datePicker=false },trainOnly=mode=="PRASA") { date=it;model.edit { state->state.copy(date=it) };datePicker=false }
+    if(timePicker) DepartureTimePicker(time,{ timePicker=false },trainOnly=mode=="PRASA") { time=it;model.edit { state->state.copy(time=it) };timePicker=false }
+    if(consent) AlertDialog(onDismissRequest={ consent=false },title={ Text("Calculate mapped walking routes?") },text={ Text("FOSSGIS / OSRM receives the selected start, destination and candidate stop coordinates. This checks foot paths and caches them locally. Published transit times remain scheduled estimates.") },confirmButton={ TextButton(onClick={ onlineWalks=true;consent=false }) { Text("Enable estimates") } },dismissButton={ TextButton(onClick={ consent=false }) { Text("Keep timetable only") } })
+}
+
+@Composable internal fun ModeOfTransport(mode: String,compact: Boolean=false,onMode: (String)->Unit) {
+    var open by remember { mutableStateOf(false) }
+    val label=if(mode=="compare") "Compare" else TransportService.valueOf(mode).title
+    Box {
+        if(compact) FilledTonalButton(onClick={ open=true },colors=ButtonDefaults.filledTonalButtonColors(containerColor=MaterialTheme.colorScheme.surface,contentColor=MaterialTheme.colorScheme.onSurface),modifier=Modifier.heightIn(min=48.dp)) { DesignIcon(za.co.cttrains.app.R.drawable.abeona_train_front,tint=MaterialTheme.colorScheme.primary);Spacer(Modifier.width(10.dp));Text(label,style=MaterialTheme.typography.labelMedium);Spacer(Modifier.width(12.dp));DesignIcon(za.co.cttrains.app.R.drawable.abeona_chevron_down,modifier=Modifier.size(16.dp)) }
+        else OutlinedButton(onClick={ open=true },modifier=Modifier.fillMaxWidth()) { Text("Mode of transport · $label") }
+        DropdownMenu(open,{ open=false }) {
+            TransportService.values().forEach { service -> DropdownMenuItem(text={ Text(service.title) },modifier=Modifier.testTag("provider-choice:${service.name}"),onClick={ onMode(service.name);open=false }) }
+            DropdownMenuItem(text={ Text("Compare") },modifier=Modifier.testTag("provider-choice:compare"),onClick={ onMode("compare");open=false })
+        }
+    }
+}
+
+@Composable private fun JourneyPlaceField(label: String,value: String,onClick: ()->Unit) {
+    OutlinedCard(onClick=onClick,modifier=Modifier.fillMaxWidth().testTag("journey-place:$label")) { Column(Modifier.padding(14.dp)) { Text(label,style=MaterialTheme.typography.labelSmall);Text(value,style=MaterialTheme.typography.bodyLarge) } }
+}
+
+@Composable internal fun JourneyPlacePicker(train: TrainState,model: TrainViewModel,s: FeatureState,m: FeatureViewModel,start: Boolean,onDismiss: ()->Unit,onSelect: (WalkEndpoint)->Unit) {
+    var query by remember(start) { mutableStateOf("") }
+    var online by remember { mutableStateOf(false) }
+    var suggestions by remember { mutableStateOf<List<PlaceSuggestion>>(emptyList()) }
+    var issue by remember { mutableStateOf<String?>(null) }
+    var map by remember { mutableStateOf(false) }
+    val permission=rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { grants -> if(grants.values.any { it }) model.locateOnce() }
+    val places=remember(train.stations,s.extras.spots,s.snapshots,s.extras.beta.goldenArrow,s.extras.beta.myCiti) {
+        val saved=s.extras.spots.map { WalkEndpoint("spot:${it.id}",it.name,it.point) }
+        val rail=train.stations.filter { it.mapped }.map(WalkingRoutes::endpoint)
+        val bus=s.snapshots.filterKeys(s.extras.beta::enabled).flatMap { (service,source) -> source.stops.map { WalkEndpoint("bus:${service.name}:${it.id}",it.name,it.point) } }
+        saved+rail+bus
+    }
+    val local=remember(places,query,s.extras.spots) { places.asSequence().filter { p ->
+        p.label.contains(query,true) || s.extras.spots.any { p.id=="spot:${it.id}" && (it.tag.contains(query,true) || it.note.contains(query,true)) }
+    }.take(40).toList() }
+    LaunchedEffect(query,online) {
+        suggestions=emptyList();issue=null
+        if(online && query.trim().length>=3) { delay(850);try { suggestions=m.placeSuggestions(query) } catch(e: Exception) { if(e is CancellationException) throw e;issue="Online suggestions unavailable. Saved stops and places are still searchable." } }
+    }
+    ModalBottomSheet(onDismissRequest=onDismiss,sheetState=rememberModalBottomSheetState(skipPartiallyExpanded=true),containerColor=MaterialTheme.colorScheme.surface,shape=AbeonaSpace.sheet) {
+        LazyColumn(Modifier.fillMaxWidth().imePadding(),contentPadding=PaddingValues(16.dp),verticalArrangement=Arrangement.spacedBy(8.dp)) {
+            item {
+                Text(if(start) "Where do you leave from?" else "Where do you want to go?",style=MaterialTheme.typography.titleLarge)
+                OutlinedTextField(query,{ query=it.take(120) },label={ Text("Search places, stations or stops") },singleLine=true,modifier=Modifier.fillMaxWidth())
+                TextButton(onClick={ map=true }) { Text("Choose on map") }
+                TextButton(onClick={ online=!online }) { Text(if(online) "Online suggestions on · Photon" else "Enable online address suggestions") }
+                if(online) Text("Typed searches are sent to Photon. Results use OpenStreetMap data.",style=MaterialTheme.typography.labelSmall)
+                train.currentPosition?.let { p -> TextButton(onClick={ onSelect(WalkEndpoint("current","Current location",GeoPoint(p.latitude,p.longitude))) }) { Text("Current location · accuracy ${p.accuracyMeters.toInt()} m") } }
+                TextButton(onClick={ permission.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION)) }) { Text("Refresh my location") }
+                issue?.let { Text(it,style=MaterialTheme.typography.bodySmall) }
+            }
+            items(suggestions,key={ "place:${it.id}" }) { p -> ListItem(headlineContent={ Text(p.label) },supportingContent={ Text("Online place") },modifier=Modifier.clickable { onSelect(WalkEndpoint("place:${p.id}",p.label.take(100),p.point)) }) }
+            items(local,key={ it.id }) { p -> ListItem(headlineContent={ Text(p.label) },supportingContent={ Text(if(p.id.startsWith("spot:")) "Saved place" else if(p.id.startsWith("station:")) "Train station" else "Bus stop") },modifier=Modifier.testTag("place-choice:${p.id}").clickable { onSelect(p) }) }
+        }
+    }
+    if(map) PlaceMapPicker(train,{ map=false }) { map=false;onSelect(it) }
+}
+
+@Composable internal fun PlannerJourneyCard(option: PlannerOption,fastest: Boolean,s: FeatureState,model: TrainViewModel,m: FeatureViewModel,selected: Boolean=false,onSelect: ()->Unit={},onDirections: ()->Unit={},onSchedule: ()->Unit,onView: ()->Unit) {
+    var details by rememberSaveable(option.id) { mutableStateOf(false) }
+    var repeatEdit by remember { mutableStateOf<CommuteRoutine?>(null) }
+    var selectFare by remember { mutableStateOf(false) }
+    var fare by remember(option.id) { mutableStateOf(option.fares.firstOrNull()) }
+    val isRouteSelected=selected
+    val clock=remember { DateTimeFormatter.ofPattern("HH:mm").withZone(CapeTownZone) }
+    Card(onClick=onSelect,modifier=Modifier.fillMaxWidth().testTag("route-option:${option.id}").semantics { this.selected=isRouteSelected;role=Role.RadioButton },shape=AbeonaSpace.panel,border=BorderStroke(if(selected) 2.dp else 1.dp,if(selected) MaterialTheme.colorScheme.primary else androidx.compose.ui.graphics.Color.Transparent),colors=CardDefaults.cardColors(containerColor=MaterialTheme.colorScheme.surface)) {
+        Column(Modifier.padding(20.dp),verticalArrangement=Arrangement.spacedBy(4.dp)) {
+            if(selected) Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically) {
+                Text(if(fastest) "BEST COMPLETE OPTION" else option.service.title,style=MaterialTheme.typography.labelSmall,color=MaterialTheme.colorScheme.primary,modifier=Modifier.weight(1f))
+                Icon(Icons.Outlined.CheckCircle,null,tint=MaterialTheme.colorScheme.primary)
+            }
+            Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(8.dp)) {
+                Text((option.estimate.totalMinutes ?: option.rideMinutes).toString(),style=if(selected) MaterialTheme.typography.displaySmall.copy(lineHeight=50.sp) else MaterialTheme.typography.headlineSmall)
+                Text(if(option.estimate.totalMinutes!=null) "min" else "min on board",style=if(selected) MaterialTheme.typography.titleLarge else MaterialTheme.typography.titleSmall)
+                if(!selected) { Spacer(Modifier.weight(1f));Icon(Icons.Outlined.RadioButtonUnchecked,null,tint=MaterialTheme.colorScheme.outlineVariant) }
+            }
+            Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(12.dp)) {
+                Text(clock.format(Instant.ofEpochMilli(option.estimate.departureAt)),style=if(selected) MaterialTheme.typography.titleLarge else MaterialTheme.typography.bodyMedium)
+                DesignIcon(R.drawable.abeona_arrow_right,modifier=Modifier.size(20.dp),tint=MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(option.estimate.arrivalAt?.let { clock.format(Instant.ofEpochMilli(it)) } ?: "Unknown",style=if(selected) MaterialTheme.typography.titleLarge else MaterialTheme.typography.bodyMedium)
+            }
+            Text(if(option.parts.isNotEmpty()) "Rail + MyCiTi" else option.rail?.takeIf { it.transfers>0 }?.let { j->"${j.transfers} ${if(j.transfers==1) "change" else "changes"} at ${j.legs.drop(1).joinToString { it.departure.name }}" } ?: "${option.board} → ${option.alight}",style=MaterialTheme.typography.bodyMedium)
+            if(selected) {
+                Text("Walk ${option.estimate.walkingMinutes?.let { "$it min" } ?: "unknown"} · wait ${option.estimate.waitingMinutes?.let { "$it min + 5 min buffer" } ?: "unknown"}",style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant)
+                if(option.estimate.totalMinutes==null) Text("Walking time unavailable",style=MaterialTheme.typography.bodySmall)
+                Text(fare?.let { "Fare ${money(it.cents)} · ${it.label}" } ?: "Fare unavailable",style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant)
+                HorizontalDivider(Modifier.padding(top=4.dp),color=MaterialTheme.colorScheme.outlineVariant)
+            }
+            Row(horizontalArrangement=Arrangement.spacedBy(8.dp),verticalAlignment=Alignment.CenterVertically) {
+                DesignIcon(if(option.cached) R.drawable.abeona_wifi_off else R.drawable.abeona_clock3,modifier=Modifier.size(16.dp),tint=MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("${if(option.cached) "Cached schedule" else "Scheduled"} · ${if(option.service==TransportService.PRASA && option.parts.isEmpty()) sourceLabel(option.sourceId) else option.service.title} · checked ${checked(option.fetchedAt)}",style=MaterialTheme.typography.labelSmall,color=MaterialTheme.colorScheme.onSurfaceVariant,modifier=Modifier.weight(1f))
+                TextButton(onClick={ details=true },contentPadding=PaddingValues(horizontal=4.dp),modifier=Modifier.heightIn(min=48.dp)) { Text("Route details",style=MaterialTheme.typography.labelSmall) }
+            }
+        }
+    }
+    if(details) ModalBottomSheet(onDismissRequest={ details=false },sheetState=rememberModalBottomSheetState(skipPartiallyExpanded=true),containerColor=MaterialTheme.colorScheme.surface,shape=AbeonaSpace.sheet) {
+        Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(24.dp).navigationBarsPadding(),verticalArrangement=Arrangement.spacedBy(16.dp)) {
+            AbeonaHeading("Journey details","${option.board} → ${option.alight}")
+            Text(fare?.let { "Fare ${money(it.cents)} · ${it.label}" } ?: "Fare unavailable",style=MaterialTheme.typography.bodyMedium)
+        FlowRow(horizontalArrangement=Arrangement.spacedBy(8.dp)) {
+            TextButton(onClick={ details=false;onView() }) { Text("View map") }
+            ShareJourneyButton(m) { val state=model.state.value;JourneySharing.itinerary(za.co.cttrains.app.directions.DirectionsPlans.option(option,state,s),option.service,s.extras.localName,System.currentTimeMillis()) }
+            if(option.parts.isEmpty() && option.service==TransportService.PRASA) TextButton(onClick={ details=false;onSchedule() }) { Text("Save & reminders") }
+            if(option.parts.isEmpty() && option.service!=TransportService.PRASA) TextButton(onClick={ details=false;val b=option.bus!!;repeatEdit=CommuteRoutine(java.util.UUID.randomUUID().toString(),"${s.access?.label ?: option.board} → ${s.destination?.label ?: option.alight}".take(100),SearchQuery(option.board,option.alight,java.time.Instant.ofEpochMilli(option.estimate.departureAt).atZone(CapeTownZone).toLocalDate().toString(),b.departure.time),setOf(1,2,3,4,5),option.service.name,option.walks.firstOrNull { it.to.id.startsWith("bus:") }?.minutes ?: 0,5,origin=s.access ?: b.board?.let { WalkEndpoint("bus:${option.service.name}:${it.id}",it.name.take(100),it.point) },destination=s.destination ?: b.alight?.let { WalkEndpoint("bus:${option.service.name}:${it.id}",it.name.take(100),it.point) },createdAt=System.currentTimeMillis(),service=option.service,busRoute=b.timetable.route,boardCallId=b.departure.id,alightCallId=b.arrival.id) }) { Text("Repeat journey") }
+            if(option.parts.isEmpty() && option.service!=TransportService.PRASA) TextButton(onClick={ details=false;selectFare=true }) { Text("Choose fare") }
+        }
+        run {
+            option.parts.forEach { part -> Text("${part.service.title} · ${part.board} → ${part.alight}",style=MaterialTheme.typography.titleSmall);Text(part.fares.firstOrNull()?.let { "Fare ${money(it.cents)}" } ?: "Stage fare unavailable",style=MaterialTheme.typography.bodySmall) }
+            option.walks.forEach { leg -> PlannerWalk(leg,s,m) }
+            option.rail?.legs?.forEach { leg -> Text("Train ${leg.train} · ${leg.departure.name} ${leg.departure.time} → ${leg.arrival.name} ${leg.arrival.time}",style=MaterialTheme.typography.bodySmall) }
+            option.bus?.let { j -> Text("${j.timetable.route.title}\nBoard ${j.departure.name} · get off ${j.arrival.name}",style=MaterialTheme.typography.bodySmall) }
+            Text("${if(option.cached) "Includes saved data" else "Checked"} · ${checked(option.fetchedAt)}",style=MaterialTheme.typography.labelSmall)
+            if(option.notice.isNotBlank()) Text(option.notice,style=MaterialTheme.typography.bodySmall)
+        }
+
+            AbeonaAction("Start this journey",{ details=false;onDirections() })
+        }
+    }
+    repeatEdit?.let { RoutineEditor(it,m) { repeatEdit=null } }
+    if(selectFare) ModalBottomSheet(onDismissRequest={ selectFare=false },sheetState=rememberModalBottomSheetState(skipPartiallyExpanded=true),containerColor=MaterialTheme.colorScheme.surface,shape=AbeonaSpace.sheet) {
+        val rows=s.snapshots[option.service]?.fares.orEmpty()
+        var filter by remember { mutableStateOf("") }
+        LazyColumn(contentPadding=PaddingValues(16.dp),verticalArrangement=Arrangement.spacedBy(8.dp)) {
+            item { Text("Confirm the fare for this journey",style=MaterialTheme.typography.titleLarge);Text("Choose the actual distance band, payment product and travel period. A pass price is not a single trip fare.",style=MaterialTheme.typography.bodySmall);OutlinedTextField(filter,{ filter=it },label={ Text("Find route / fare band") },modifier=Modifier.fillMaxWidth()) }
+            items(rows.filter { it.title.contains(filter,true) }.take(50)) { row ->
+                Text(row.title,style=MaterialTheme.typography.titleMedium)
+                row.products.filterKeys { !Regex("weekly|monthly|[0-9]+.?ride",RegexOption.IGNORE_CASE).containsMatchIn(it) }.forEach { (name,published) ->
+                    val correction=s.extras.priceCorrections.lastOrNull { it.service==option.service && it.fareId==row.id && it.product==name }
+                    val cents=correction?.cents ?: published
+                    TextButton(onClick={ fare=RouteFare(cents,"${if(correction!=null) "Your correction" else "Selected product"} · ${row.title} · $name",correction!=null);selectFare=false }) { Text("$name · ${money(cents)}${if(correction!=null) " · Your price" else ""}") }
+                }
+            }
+            items(s.extras.priceCorrections.filter { it.service==option.service && Regex("cash|single",RegexOption.IGNORE_CASE).containsMatchIn(it.product) }) { c -> TextButton(onClick={ fare=RouteFare(c.cents,"Your confirmed quote · ${c.fareId.substringAfter("personal:")}",true);selectFare=false }) { Text("${c.product} · ${money(c.cents)}") } }
+            if(rows.isEmpty()) item { Text("No published fare products are cached. Add your confirmed single price in Bus schedules → Fares.") }
+        }
+    }
+}
+
+@Composable private fun PlannerWalk(leg: WalkingLeg,s: FeatureState,m: FeatureViewModel) {
+    val context=androidx.compose.ui.platform.LocalContext.current
+    val active by za.co.cttrains.app.scheduling.WalkLearningService.active.collectAsStateWithLifecycle()
+    val permission=rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { grants ->
+        if(grants[Manifest.permission.ACCESS_FINE_LOCATION]==true || grants[Manifest.permission.ACCESS_COARSE_LOCATION]==true)
+            za.co.cttrains.app.scheduling.WalkLearningService.start(context,leg)
+        else m.message("Location permission is needed to learn a walk.")
+    }
+    Text("Walk ${leg.from.label} → ${leg.to.label} · ${leg.distanceMeters.toInt()} m · ${leg.minutes} min",style=MaterialTheme.typography.bodySmall)
+    WalkingRoutes.learned(leg,s.extras.walkSamples)?.let { Text("Your observed median: $it min",style=MaterialTheme.typography.labelSmall) }
+    if(s.extras.beta.walkLearning) {
+        TextButton(onClick={
+            if(active) za.co.cttrains.app.scheduling.WalkLearningService.stop(context)
+            else permission.launch((listOf(Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION)+if(android.os.Build.VERSION.SDK_INT>=33) listOf(Manifest.permission.POST_NOTIFICATIONS) else emptyList()).toTypedArray())
+        }) { Text(if(active) "Stop learning walk" else "Learn this walk · starts now") }
+    }
+}

@@ -1,0 +1,12 @@
+node_modules/
+.env
+.env.*
+!.env.example
+*.log
+.gradle/
+**/build/
+**/local.properties
+**/dist/
+*.jks
+*.keystore
+workers/scrapers/data/
