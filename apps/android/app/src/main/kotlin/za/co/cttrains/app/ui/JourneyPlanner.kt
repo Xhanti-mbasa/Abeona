@@ -29,6 +29,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.CancellationException
@@ -305,35 +306,39 @@ import za.co.cttrains.core.*
     val isRouteSelected=selected
     val clock=remember { DateTimeFormatter.ofPattern("HH:mm").withZone(CapeTownZone) }
     Card(onClick=onSelect,modifier=Modifier.fillMaxWidth().testTag("route-option:${option.id}").semantics { this.selected=isRouteSelected;role=Role.RadioButton },shape=AbeonaSpace.panel,border=BorderStroke(if(selected) 2.dp else 1.dp,if(selected) MaterialTheme.colorScheme.primary else androidx.compose.ui.graphics.Color.Transparent),colors=CardDefaults.cardColors(containerColor=MaterialTheme.colorScheme.surface)) {
-        Column(Modifier.padding(22.dp),verticalArrangement=Arrangement.spacedBy(10.dp)) {
-            Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically) {
+        Column(Modifier.padding(20.dp),verticalArrangement=Arrangement.spacedBy(4.dp)) {
+            if(selected) Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically) {
                 Text(if(fastest) "BEST COMPLETE OPTION" else option.service.title,style=MaterialTheme.typography.labelSmall,color=MaterialTheme.colorScheme.primary,modifier=Modifier.weight(1f))
-                Icon(if(selected) Icons.Outlined.CheckCircle else Icons.Outlined.RadioButtonUnchecked,null,tint=if(selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant)
+                Icon(Icons.Outlined.CheckCircle,null,tint=MaterialTheme.colorScheme.primary)
             }
-            Row(verticalAlignment=Alignment.Bottom,horizontalArrangement=Arrangement.spacedBy(8.dp)) {
-                Text((option.estimate.totalMinutes ?: option.rideMinutes).toString(),style=MaterialTheme.typography.displaySmall)
-                Text(if(option.estimate.totalMinutes!=null) "min" else "min on board",style=MaterialTheme.typography.titleLarge,modifier=Modifier.padding(bottom=6.dp))
+            Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(8.dp)) {
+                Text((option.estimate.totalMinutes ?: option.rideMinutes).toString(),style=if(selected) MaterialTheme.typography.displaySmall.copy(lineHeight=50.sp) else MaterialTheme.typography.headlineSmall)
+                Text(if(option.estimate.totalMinutes!=null) "min" else "min on board",style=if(selected) MaterialTheme.typography.titleLarge else MaterialTheme.typography.titleSmall)
+                if(!selected) { Spacer(Modifier.weight(1f));Icon(Icons.Outlined.RadioButtonUnchecked,null,tint=MaterialTheme.colorScheme.outlineVariant) }
             }
-            Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(16.dp)) {
-                Text(clock.format(Instant.ofEpochMilli(option.estimate.departureAt)),style=MaterialTheme.typography.titleLarge)
-                DesignIcon(R.drawable.abeona_arrow_right,tint=MaterialTheme.colorScheme.onSurfaceVariant)
-                Text(option.estimate.arrivalAt?.let { clock.format(Instant.ofEpochMilli(it)) } ?: "Unknown",style=MaterialTheme.typography.titleLarge)
+            Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(12.dp)) {
+                Text(clock.format(Instant.ofEpochMilli(option.estimate.departureAt)),style=if(selected) MaterialTheme.typography.titleLarge else MaterialTheme.typography.bodyMedium)
+                DesignIcon(R.drawable.abeona_arrow_right,modifier=Modifier.size(20.dp),tint=MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(option.estimate.arrivalAt?.let { clock.format(Instant.ofEpochMilli(it)) } ?: "Unknown",style=if(selected) MaterialTheme.typography.titleLarge else MaterialTheme.typography.bodyMedium)
             }
-            Text(if(option.parts.isNotEmpty()) "Rail + MyCiTi" else option.rail?.takeIf { it.transfers>0 }?.let { j->"${j.transfers} ${if(j.transfers==1) "change" else "changes"} at ${j.legs.drop(1).joinToString { it.departure.name }}" } ?: "${option.board} → ${option.alight}",style=MaterialTheme.typography.bodyLarge)
-            Text("Walk ${option.estimate.walkingMinutes?.let { "$it min" } ?: "unknown"} · wait ${option.estimate.waitingMinutes?.let { "$it min + 5 min buffer" } ?: "unknown"}",style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant)
-            if(option.estimate.totalMinutes==null) Text("Walking time unavailable",style=MaterialTheme.typography.bodySmall)
-            Text(fare?.let { "Fare ${money(it.cents)} · ${it.label}" } ?: "Fare unavailable",style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant)
-            HorizontalDivider(color=MaterialTheme.colorScheme.outlineVariant)
+            Text(if(option.parts.isNotEmpty()) "Rail + MyCiTi" else option.rail?.takeIf { it.transfers>0 }?.let { j->"${j.transfers} ${if(j.transfers==1) "change" else "changes"} at ${j.legs.drop(1).joinToString { it.departure.name }}" } ?: "${option.board} → ${option.alight}",style=MaterialTheme.typography.bodyMedium)
+            if(selected) {
+                Text("Walk ${option.estimate.walkingMinutes?.let { "$it min" } ?: "unknown"} · wait ${option.estimate.waitingMinutes?.let { "$it min + 5 min buffer" } ?: "unknown"}",style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant)
+                if(option.estimate.totalMinutes==null) Text("Walking time unavailable",style=MaterialTheme.typography.bodySmall)
+                Text(fare?.let { "Fare ${money(it.cents)} · ${it.label}" } ?: "Fare unavailable",style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant)
+                HorizontalDivider(Modifier.padding(top=4.dp),color=MaterialTheme.colorScheme.outlineVariant)
+            }
             Row(horizontalArrangement=Arrangement.spacedBy(8.dp),verticalAlignment=Alignment.CenterVertically) {
                 DesignIcon(if(option.cached) R.drawable.abeona_wifi_off else R.drawable.abeona_clock3,modifier=Modifier.size(16.dp),tint=MaterialTheme.colorScheme.onSurfaceVariant)
                 Text("${if(option.cached) "Cached schedule" else "Scheduled"} · ${if(option.service==TransportService.PRASA && option.parts.isEmpty()) sourceLabel(option.sourceId) else option.service.title} · checked ${checked(option.fetchedAt)}",style=MaterialTheme.typography.labelSmall,color=MaterialTheme.colorScheme.onSurfaceVariant,modifier=Modifier.weight(1f))
+                TextButton(onClick={ details=true },contentPadding=PaddingValues(horizontal=4.dp),modifier=Modifier.heightIn(min=48.dp)) { Text("Route details",style=MaterialTheme.typography.labelSmall) }
             }
-            TextButton(onClick={ details=true },contentPadding=PaddingValues(0.dp),modifier=Modifier.heightIn(min=48.dp)) { Text("Route details",style=MaterialTheme.typography.labelMedium) }
         }
     }
     if(details) ModalBottomSheet(onDismissRequest={ details=false },sheetState=rememberModalBottomSheetState(skipPartiallyExpanded=true),containerColor=MaterialTheme.colorScheme.surface,shape=AbeonaSpace.sheet) {
         Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(24.dp).navigationBarsPadding(),verticalArrangement=Arrangement.spacedBy(16.dp)) {
             AbeonaHeading("Journey details","${option.board} → ${option.alight}")
+            Text(fare?.let { "Fare ${money(it.cents)} · ${it.label}" } ?: "Fare unavailable",style=MaterialTheme.typography.bodyMedium)
         FlowRow(horizontalArrangement=Arrangement.spacedBy(8.dp)) {
             TextButton(onClick={ details=false;onView() }) { Text("View map") }
             ShareJourneyButton(m) { val state=model.state.value;JourneySharing.itinerary(za.co.cttrains.app.directions.DirectionsPlans.option(option,state,s),option.service,s.extras.localName,System.currentTimeMillis()) }

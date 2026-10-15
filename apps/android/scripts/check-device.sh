@@ -19,6 +19,10 @@ if [[ "$actual_page_size" != "$expected_page_size" ]]; then
     echo "Expected $expected_page_size byte pages; emulator reports $actual_page_size." >&2
     exit 1
 fi
+# Match the accepted 393 x 852 dp reference at native density. Large-text/narrow
+# component acceptance is also exercised independently in OneUiLayoutTest.
+adb shell wm size 1080x2343
+adb shell wm density 440
 mkdir -p app/build/outputs/ui-screenshots
 if [[ "$expected_page_size" == 16384 ]]; then
     adb shell setprop bionic.linker.16kb.app_compat.enabled false
