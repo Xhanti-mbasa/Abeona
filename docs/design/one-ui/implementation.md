@@ -21,3 +21,5 @@ Original Lucide paths from the proposal are supplied as native vector resources;
 ## Verification gates
 
 Before delivery: compile both distributions and release; run existing core, provider and native acceptance suites; verify an empty-cache live train search through route selection and guidance; verify saved-place identity, station alternatives, recurrence, sharing and notification lifecycle; inspect actual light/dark captures against the proposal; exercise a 320 dp viewport at 200 percent text scaling; verify the upgrade certificate and increasing version code. Record exact outcomes after CI and visual review complete.
+
+Final validation and the source/native screen comparisons are recorded in [design-qa.md](../../../design-qa.md) and [release verification](../../release/one-ui-verification.md).

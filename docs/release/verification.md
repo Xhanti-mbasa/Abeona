@@ -1,5 +1,7 @@
 # Abeona repair verification
 
+Historical repair record. The current One UI build and signed download are documented in [one-ui-verification.md](one-ui-verification.md).
+
 Candidate **1.11.1-build.14**, version code **1134**, package **za.co.cttrains.app**, target API **36**. Engineering/test source: `6a846b60bc31f349dccee192f54414dbe5180931`. Application changes are at `2b37be51cd24e13eaa8ba93fe174055f64bcb130`; the next commit corrects lifecycle test expectations without changing production code.
 
 The **1.11.0-build.10 candidate is superseded**. It removed the original train connection while shipping an empty backend URL. Its cached-fixture journey test did not verify fresh train planning. Do not use the earlier 81 native executions as evidence that fresh searches worked in that build.
