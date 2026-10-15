@@ -13,6 +13,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.foundation.clickable
 import androidx.compose.ui.unit.dp
 import za.co.cttrains.app.*
+import za.co.cttrains.app.R
 import za.co.cttrains.core.*
 
 @Composable internal fun AbeonaHome(train: TrainState,model: TrainViewModel,s: FeatureState,m: FeatureViewModel,

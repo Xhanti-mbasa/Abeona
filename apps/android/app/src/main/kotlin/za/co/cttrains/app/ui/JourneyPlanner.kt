@@ -326,7 +326,7 @@ import za.co.cttrains.core.*
             HorizontalDivider(color=MaterialTheme.colorScheme.outlineVariant)
             Row(horizontalArrangement=Arrangement.spacedBy(8.dp),verticalAlignment=Alignment.CenterVertically) {
                 DesignIcon(if(option.cached) R.drawable.abeona_wifi_off else R.drawable.abeona_clock3,modifier=Modifier.size(16.dp),tint=MaterialTheme.colorScheme.onSurfaceVariant)
-                Text("${if(option.cached) "Cached schedule" else "Scheduled"} · ${option.service.title} · checked ${checked(option.fetchedAt)}",style=MaterialTheme.typography.labelSmall,color=MaterialTheme.colorScheme.onSurfaceVariant,modifier=Modifier.weight(1f))
+                Text("${if(option.cached) "Cached schedule" else "Scheduled"} · ${if(option.service==TransportService.PRASA && option.parts.isEmpty()) sourceLabel(option.sourceId) else option.service.title} · checked ${checked(option.fetchedAt)}",style=MaterialTheme.typography.labelSmall,color=MaterialTheme.colorScheme.onSurfaceVariant,modifier=Modifier.weight(1f))
             }
             TextButton(onClick={ details=true },contentPadding=PaddingValues(0.dp),modifier=Modifier.heightIn(min=48.dp)) { Text("Route details",style=MaterialTheme.typography.labelMedium) }
         }
@@ -335,11 +335,11 @@ import za.co.cttrains.core.*
         Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(24.dp).navigationBarsPadding(),verticalArrangement=Arrangement.spacedBy(16.dp)) {
             AbeonaHeading("Journey details","${option.board} → ${option.alight}")
         FlowRow(horizontalArrangement=Arrangement.spacedBy(8.dp)) {
-            TextButton(onClick=onView) { Text("View map") }
+            TextButton(onClick={ details=false;onView() }) { Text("View map") }
             ShareJourneyButton(m) { val state=model.state.value;JourneySharing.itinerary(za.co.cttrains.app.directions.DirectionsPlans.option(option,state,s),option.service,s.extras.localName,System.currentTimeMillis()) }
-            if(option.parts.isEmpty() && option.service==TransportService.PRASA) TextButton(onClick=onSchedule) { Text("Save & reminders") }
-            if(option.parts.isEmpty() && option.service!=TransportService.PRASA) TextButton(onClick={ val b=option.bus!!;repeatEdit=CommuteRoutine(java.util.UUID.randomUUID().toString(),"${s.access?.label ?: option.board} → ${s.destination?.label ?: option.alight}".take(100),SearchQuery(option.board,option.alight,java.time.Instant.ofEpochMilli(option.estimate.departureAt).atZone(CapeTownZone).toLocalDate().toString(),b.departure.time),setOf(1,2,3,4,5),option.service.name,option.walks.firstOrNull { it.to.id.startsWith("bus:") }?.minutes ?: 0,5,origin=s.access ?: b.board?.let { WalkEndpoint("bus:${option.service.name}:${it.id}",it.name.take(100),it.point) },destination=s.destination ?: b.alight?.let { WalkEndpoint("bus:${option.service.name}:${it.id}",it.name.take(100),it.point) },createdAt=System.currentTimeMillis(),service=option.service,busRoute=b.timetable.route,boardCallId=b.departure.id,alightCallId=b.arrival.id) }) { Text("Repeat journey") }
-            if(option.parts.isEmpty() && option.service!=TransportService.PRASA) TextButton(onClick={ selectFare=true }) { Text("Choose fare") }
+            if(option.parts.isEmpty() && option.service==TransportService.PRASA) TextButton(onClick={ details=false;onSchedule() }) { Text("Save & reminders") }
+            if(option.parts.isEmpty() && option.service!=TransportService.PRASA) TextButton(onClick={ details=false;val b=option.bus!!;repeatEdit=CommuteRoutine(java.util.UUID.randomUUID().toString(),"${s.access?.label ?: option.board} → ${s.destination?.label ?: option.alight}".take(100),SearchQuery(option.board,option.alight,java.time.Instant.ofEpochMilli(option.estimate.departureAt).atZone(CapeTownZone).toLocalDate().toString(),b.departure.time),setOf(1,2,3,4,5),option.service.name,option.walks.firstOrNull { it.to.id.startsWith("bus:") }?.minutes ?: 0,5,origin=s.access ?: b.board?.let { WalkEndpoint("bus:${option.service.name}:${it.id}",it.name.take(100),it.point) },destination=s.destination ?: b.alight?.let { WalkEndpoint("bus:${option.service.name}:${it.id}",it.name.take(100),it.point) },createdAt=System.currentTimeMillis(),service=option.service,busRoute=b.timetable.route,boardCallId=b.departure.id,alightCallId=b.arrival.id) }) { Text("Repeat journey") }
+            if(option.parts.isEmpty() && option.service!=TransportService.PRASA) TextButton(onClick={ details=false;selectFare=true }) { Text("Choose fare") }
         }
         run {
             option.parts.forEach { part -> Text("${part.service.title} · ${part.board} → ${part.alight}",style=MaterialTheme.typography.titleSmall);Text(part.fares.firstOrNull()?.let { "Fare ${money(it.cents)}" } ?: "Stage fare unavailable",style=MaterialTheme.typography.bodySmall) }

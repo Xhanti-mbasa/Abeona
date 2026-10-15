@@ -30,10 +30,14 @@ class AbeonaJourneyUiTest {
         app.onNodeWithTag("home-destination").assertIsDisplayed()
         app.onNodeWithText("Where to?").assertIsDisplayed();app.onNodeWithTag("nav:plan").assertIsSelected()
         listOf("map","plan","saved","upcoming","settings").forEach { app.onNodeWithTag("nav:$it").assertIsDisplayed() };app.onNodeWithTag("home-find-routes").assertIsDisplayed();UiScreenshots.save("abeona-home-dark")
-        app.onNodeWithContentDescription("Settings").performClick();app.onNodeWithText("Your app, your choices.").assertIsDisplayed()
+        app.onNodeWithContentDescription("Settings").performClick();app.onNodeWithText("Your app, your choices.").assertIsDisplayed();UiScreenshots.save("abeona-settings-dark")
         app.runOnUiThread { app.activity.onBackPressedDispatcher.onBackPressed() }
         app.onNodeWithTag("home-destination").assertIsDisplayed()
         app.runOnUiThread { train.setTheme("Light") };app.waitUntil(15000) { train.state.value.preferences.theme=="Light" };app.waitForIdle();UiScreenshots.save("abeona-home-light")
+        app.onNodeWithTag("nav:saved").performClick();app.onNodeWithTag("saved-addresses").assertIsDisplayed();UiScreenshots.save("abeona-saved-light")
+        app.onNodeWithTag("nav:upcoming").performClick();app.onNodeWithTag("upcoming-journeys").assertIsDisplayed();UiScreenshots.save("abeona-journeys-light")
+        app.onNodeWithTag("nav:settings").performClick();app.onNodeWithText("Your app, your choices.").assertIsDisplayed();UiScreenshots.save("abeona-settings-light")
+        app.onNodeWithTag("nav:map").performClick();app.onNodeWithText("Search stations").assertIsDisplayed();UiScreenshots.save("abeona-map-light")
     }
     @Test fun freshLiveTrainSearchCanStartGuidanceWithoutAnyBackendOrSeededCache() {
         assertTrue("This acceptance test must exercise the shipped unconfigured build",BuildConfig.TRANSIT_BASE_URL.isBlank())

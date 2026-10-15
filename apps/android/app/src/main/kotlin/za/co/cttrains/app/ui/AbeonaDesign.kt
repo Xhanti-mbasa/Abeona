@@ -37,3 +37,13 @@ internal object AbeonaSpace {
     Button(onClick, modifier.fillMaxWidth().heightIn(min = AbeonaSpace.action), enabled = enabled,
         shape = RoundedCornerShape(28.dp), contentPadding = PaddingValues(horizontal = 20.dp, vertical = 14.dp)) { Text(label) }
 }
+
+@Composable internal fun SettingsTravelRow(label: String, @DrawableRes asset: Int, onClick: () -> Unit) {
+    Surface(onClick=onClick,color=MaterialTheme.colorScheme.surface) {
+        Row(Modifier.fillMaxWidth().heightIn(min=56.dp).padding(horizontal=20.dp,vertical=14.dp),horizontalArrangement=Arrangement.spacedBy(16.dp),verticalAlignment=androidx.compose.ui.Alignment.CenterVertically) {
+            DesignIcon(asset,tint=MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(label,Modifier.weight(1f),style=MaterialTheme.typography.bodyMedium)
+            DesignIcon(za.co.cttrains.app.R.drawable.abeona_chevron_right,tint=MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
+}

@@ -8,6 +8,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.ui.Alignment
 import za.co.cttrains.app.*
+import za.co.cttrains.app.R
 import android.content.Intent
 import android.os.Build
 import android.provider.Settings

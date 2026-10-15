@@ -205,11 +205,15 @@ private fun AboutScreen(state: TrainState, model: TrainViewModel,feature: za.co.
                 }
             }
         }
-        Notice("An independent, community app for Cape Town rail commuters. Timetables come from CT Trains. This app is not affiliated with CT Trains, PRASA or Metrorail.", Icons.Outlined.Train)
-        FilledTonalButton(onClick=onDirections,modifier=Modifier.fillMaxWidth()) { Text("Journey directions & Live Updates") }
-        OutlinedButton(onClick=onUpdates,modifier=Modifier.fillMaxWidth()) { Text("App updates") }
-        OutlinedButton(onClick=model::openMap,modifier=Modifier.fillMaxWidth()) { Icon(Icons.Outlined.Map,null);Spacer(Modifier.width(8.dp));Text("Explore transport map") }
-        OutlinedButton(onClick=onBudget,modifier=Modifier.fillMaxWidth()) { Text("Travel budget & fare corrections") }
+        Text("YOUR TRAVEL TOOLS",style=MaterialTheme.typography.labelSmall,color=MaterialTheme.colorScheme.onSurfaceVariant)
+        Card(shape=AbeonaSpace.panel) { Column {
+            SettingsTravelRow("Bus schedules & fares",R.drawable.abeona_bus_front,onBuses)
+            SettingsTravelRow("Service updates",R.drawable.abeona_bell) { model.edit { it.copy(requestedScreen="alerts") } }
+            SettingsTravelRow("Journey directions & Live Updates",R.drawable.abeona_navigation2,onDirections)
+            SettingsTravelRow("App updates",R.drawable.abeona_refresh_cw,onUpdates)
+            SettingsTravelRow("Explore transport map",R.drawable.abeona_map,model::openMap)
+            SettingsTravelRow("Travel budget & fare corrections",R.drawable.abeona_wallet,onBudget)
+        } }
         BetaSettings(feature,features,onBuses,onTrips,onCommunity,onWhatsApp)
         FeatureStatus(feature)
         ProfileSettings(feature,features)

@@ -57,7 +57,14 @@ fun AlertsScreen(state: TrainState, model: TrainViewModel) {
                 }
             }
         }
-        state.alertsError?.let { error -> item { Text(error, color = MaterialTheme.colorScheme.error) } }
+        state.alertsError?.let { error -> item {
+            Card(Modifier.fillMaxWidth(),shape=AbeonaSpace.panel) { Column(Modifier.padding(24.dp),verticalArrangement=Arrangement.spacedBy(16.dp)) {
+                Icon(Icons.Outlined.WarningAmber,null,tint=MaterialTheme.colorScheme.error,modifier=Modifier.size(28.dp))
+                Text("Service updates unavailable",style=MaterialTheme.typography.titleLarge)
+                Text(error,style=MaterialTheme.typography.bodyMedium,color=MaterialTheme.colorScheme.onSurfaceVariant)
+                FilledTonalButton(onClick=model::refreshAlerts,enabled=!state.alertsLoading,modifier=Modifier.fillMaxWidth().heightIn(min=48.dp)) { Text("Try again") }
+            } }
+        } }
         item {
             OutlinedTextField(search, { if (it.length <= 100) search = it }, label = { Text("Find a train, station or message") }, singleLine = true, modifier = Modifier.fillMaxWidth(), leadingIcon = { Icon(Icons.Outlined.Search, null) })
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) { groups.forEach { name -> FilterChip(selected == name, { group = name }, label = { Text(name) }) } }
