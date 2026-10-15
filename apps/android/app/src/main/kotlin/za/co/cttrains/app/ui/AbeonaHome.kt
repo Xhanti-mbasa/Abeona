@@ -34,7 +34,7 @@ import za.co.cttrains.core.*
                         HorizontalDivider(Modifier.padding(start=58.dp,end=24.dp),color=MaterialTheme.colorScheme.outlineVariant)
                         EndpointRow("TO",to?.label ?: "Choose destination",if(s.destination!=null) arrive?.let { "Via $it · your choice" } ?: "Choose a preferred station" else null,R.drawable.abeona_search,"home-destination",onDestination)
                     }
-                    FilledTonalIconButton(onClick=onSwap,enabled=from!=null&&to!=null,modifier=Modifier.align(Alignment.CenterEnd).padding(end=8.dp).size(48.dp)) { DesignIcon(R.drawable.abeona_arrow_down_up,"Swap origin and destination") }
+                    IconButton(onClick=onSwap,enabled=from!=null&&to!=null,modifier=Modifier.align(Alignment.CenterEnd).padding(end=8.dp).size(48.dp)) { DesignIcon(R.drawable.abeona_arrow_down_up,"Swap origin and destination") }
                 }
             } }
             if(s.access!=null || s.destination!=null) item { FlowRow(horizontalArrangement=Arrangement.spacedBy(8.dp)) {
@@ -68,12 +68,13 @@ import za.co.cttrains.core.*
                     }
                 }
             } }
-            item { Row(Modifier.padding(horizontal=4.dp,vertical=8.dp),horizontalArrangement=Arrangement.spacedBy(8.dp),verticalAlignment=Alignment.CenterVertically) {
+
+        }
+        Column(Modifier.fillMaxWidth().padding(start=20.dp,end=20.dp,bottom=12.dp),verticalArrangement=Arrangement.spacedBy(12.dp)) {
+            Row(horizontalArrangement=Arrangement.spacedBy(8.dp),verticalAlignment=Alignment.CenterVertically) {
                 DesignIcon(R.drawable.abeona_clock3,modifier=Modifier.size(16.dp),tint=MaterialTheme.colorScheme.onSurfaceVariant)
                 Text("Scheduled information. Check before travelling.",style=MaterialTheme.typography.labelSmall,color=MaterialTheme.colorScheme.onSurfaceVariant)
-            } }
-        }
-        Box(Modifier.fillMaxWidth().padding(horizontal=20.dp,vertical=12.dp)) {
+            }
             AbeonaAction(if(to==null) "Choose a destination" else if(from==null) "Choose your start" else if(mode=="compare") "Compare routes" else "Find routes",onSearch,Modifier.testTag("home-find-routes"),enabled=from!=null&&to!=null&&from!=to)
         }
     }

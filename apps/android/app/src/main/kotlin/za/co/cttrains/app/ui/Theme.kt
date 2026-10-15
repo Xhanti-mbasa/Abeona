@@ -19,8 +19,8 @@ import androidx.core.view.WindowCompat
 import za.co.cttrains.app.data.Preferences
 
 private val Light=lightColorScheme(
-    primary=Color(0xFF006BD6),onPrimary=Color.White,primaryContainer=Color(0xFFE6F0FF),onPrimaryContainer=Color(0xFF006BD6),
-    secondary=Color(0xFF63636C),onSecondary=Color.White,secondaryContainer=Color(0xFFE6F0FF),onSecondaryContainer=Color(0xFF006BD6),
+    primary=Color(0xFF006BD6),onPrimary=Color.White,primaryContainer=Color(0xFFE6F0FF),onPrimaryContainer=Color(0xFF0068D1),
+    secondary=Color(0xFF63636C),onSecondary=Color.White,secondaryContainer=Color(0xFFE6F0FF),onSecondaryContainer=Color(0xFF0068D1),
     tertiary=Color(0xFF126F60),tertiaryContainer=Color(0xFFE3F3EB),onTertiaryContainer=Color(0xFF126F60),
     background=Color(0xFFF3F3F6),onBackground=Color(0xFF151518),surface=Color.White,onSurface=Color(0xFF151518),
     surfaceContainer=Color.White,surfaceContainerLow=Color.White,surfaceContainerHigh=Color(0xFFEAEAF0),surfaceContainerHighest=Color.White,

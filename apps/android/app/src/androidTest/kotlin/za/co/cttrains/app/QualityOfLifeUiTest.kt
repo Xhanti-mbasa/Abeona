@@ -90,7 +90,7 @@ class QualityOfLifeUiTest {
         app.onNodeWithText("Golden Arrow").performClick()
         app.onNodeWithText("Find Golden Arrow routes").performScrollTo().assertIsDisplayed()
         app.onNodeWithText("Mode of transport · Golden Arrow").performScrollTo().performClick()
-        app.onNodeWithText("Compare").performClick()
+        app.onNodeWithTag("provider-choice:compare").performClick()
         app.onNodeWithText("Compare routes").performScrollTo().assertIsDisplayed()
         app.onNodeWithText("Mode of transport · Compare").performScrollTo()
         UiScreenshots.save("planner-compare")

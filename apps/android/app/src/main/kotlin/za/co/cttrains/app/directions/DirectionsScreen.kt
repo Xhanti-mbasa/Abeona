@@ -24,6 +24,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import za.co.cttrains.app.ui.AbeonaHeading
 import za.co.cttrains.app.ui.AbeonaSpace
 import za.co.cttrains.app.ui.DesignIcon
@@ -64,25 +69,25 @@ import za.co.cttrains.core.*
     val current=session?.step ?: plan?.steps?.firstOrNull()
     Column(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing).testTag("directions-screen")) {
         LazyColumn(Modifier.weight(1f),contentPadding=PaddingValues(horizontal=20.dp,vertical=12.dp),verticalArrangement=Arrangement.spacedBy(20.dp)) {
-            item { Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically) {
+            item { Column { Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically) {
                 Text(plan?.title ?: "Journey directions",style=MaterialTheme.typography.titleSmall,modifier=Modifier.weight(1f))
                 Box { IconButton(onClick={ menu=true }) { DesignIcon(R.drawable.abeona_ellipsis,"Journey options") };DropdownMenu(menu,{ menu=false }) {
                     DropdownMenuItem(text={ Text("Notification settings") },onClick={ setup=true;menu=false })
                     DropdownMenuItem(text={ Text("View full map") },onClick={ onMap();menu=false })
                     DropdownMenuItem(text={ Text("Read current instruction") },onClick={ if(state.running) m.command("speech") else speech.speak(current?.let { it.title+". "+it.detail }.orEmpty());menu=false })
                 } }
-            } }
-            item { AbeonaHeading("Your journey",plan?.steps?.lastOrNull { it.scheduledAt!=null }?.scheduledAt?.let { "Scheduled arrival "+java.time.Instant.ofEpochMilli(it).atZone(CapeTownZone).toLocalTime().toString().take(5) } ?: "Your route, one step at a time.") }
+            }
+            AbeonaHeading("Your journey",plan?.steps?.lastOrNull { it.scheduledAt!=null }?.scheduledAt?.let { "Scheduled arrival "+java.time.Instant.ofEpochMilli(it).atZone(CapeTownZone).toLocalTime().toString().take(5) } ?: "Your route, one step at a time.") } }
             state.error?.let { item { Text(it,color=MaterialTheme.colorScheme.error) } };issue?.let { item { Text(it,color=MaterialTheme.colorScheme.error) } }
             if(plan==null) item { Text("Choose a route in Plan to see directions here.");Button(onClick=onPlan) { Text("Plan a journey") } }
             if(plan!=null) {
                 item { Card(Modifier.fillMaxWidth(),shape=AbeonaSpace.panel,colors=CardDefaults.cardColors(containerColor=MaterialTheme.colorScheme.surface)) {
                     Column(Modifier.fillMaxWidth().heightIn(min=200.dp).padding(22.dp),verticalArrangement=Arrangement.spacedBy(18.dp)) {
                         Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically) {
-                            Surface(color=MaterialTheme.colorScheme.primaryContainer,shape=RoundedCornerShape(16.dp)) { Text(if(session?.paused==true) "PAUSED" else if(session==null) "JOURNEY PREVIEW" else "CURRENT STEP",Modifier.padding(horizontal=16.dp,vertical=8.dp),style=MaterialTheme.typography.labelSmall,color=MaterialTheme.colorScheme.primary) }
+                            Surface(color=MaterialTheme.colorScheme.primaryContainer,shape=RoundedCornerShape(16.dp)) { Text(if(session?.paused==true) "PAUSED" else if(session==null) "JOURNEY PREVIEW" else "CURRENT STEP",Modifier.padding(horizontal=16.dp,vertical=8.dp),style=MaterialTheme.typography.labelSmall,color=MaterialTheme.colorScheme.onPrimaryContainer) }
                             Spacer(Modifier.weight(1f));DesignIcon(if(current?.kind==DirectionKind.WALK) R.drawable.abeona_navigation2 else R.drawable.abeona_train_front,modifier=Modifier.size(28.dp),tint=MaterialTheme.colorScheme.primary)
                         }
-                        Text(state.guidance?.title?.takeIf { session!=null } ?: current?.title.orEmpty(),style=MaterialTheme.typography.headlineSmall)
+                        Text(state.guidance?.title?.takeIf { session!=null } ?: current?.title.orEmpty(),style=MaterialTheme.typography.headlineSmall.copy(fontWeight=FontWeight.Normal))
                         Text(state.guidance?.detail?.takeIf { session!=null } ?: current?.detail.orEmpty(),style=MaterialTheme.typography.bodyMedium,color=MaterialTheme.colorScheme.onSurfaceVariant)
                         val meters=state.guidance?.remainingMeters ?: current?.distanceMeters?.toInt()
                         val minutes=state.guidance?.minutes ?: current?.durationSeconds?.let { kotlin.math.ceil(it/60).toInt() }
@@ -92,7 +97,15 @@ import za.co.cttrains.core.*
                 } }
                 item {
                     val index=session?.index ?: 0
-                    LinearProgressIndicator(progress={ (index+(state.guidance?.progress ?: 0)/100f)/plan.steps.size.coerceAtLeast(1) },modifier=Modifier.fillMaxWidth().height(4.dp),trackColor=MaterialTheme.colorScheme.outlineVariant)
+                    val labels=remember(plan) {
+                        (listOf(plan.title.substringBefore("→").trim())+plan.steps.filter { it.kind==DirectionKind.RIDE }.map { it.title.removePrefix("Get off at ") }+plan.title.substringAfter("→").trim()).filter { it.isNotBlank() }.distinct().let { if(it.size>3) listOf(it.first(),it[it.size/2],it.last()) else it }
+                    }
+                    val progress=(index+(state.guidance?.progress ?: 0)/100f)/plan.steps.size.coerceAtLeast(1)
+                    Box(Modifier.fillMaxWidth().height(20.dp),contentAlignment=Alignment.Center) {
+                        LinearProgressIndicator(progress={ progress },modifier=Modifier.fillMaxWidth().height(4.dp),trackColor=MaterialTheme.colorScheme.outlineVariant)
+                        Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween) { labels.forEachIndexed { i,_->Surface(Modifier.size(14.dp),shape=CircleShape,color=if(i==0 || progress>=i.toFloat()/(labels.size-1).coerceAtLeast(1)) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,border=BorderStroke(2.dp,MaterialTheme.colorScheme.primary)) {} } }
+                    }
+                    Row(Modifier.fillMaxWidth()) { labels.forEachIndexed { i,label->Text(label,modifier=Modifier.weight(1f),style=MaterialTheme.typography.bodySmall,maxLines=2,overflow=TextOverflow.Ellipsis,textAlign=when(i) { 0->TextAlign.Start;labels.lastIndex->TextAlign.End;else->TextAlign.Center }) } }
                     Text("Step ${index+1} of ${plan.steps.size} · phone guidance",style=MaterialTheme.typography.bodySmall,modifier=Modifier.padding(top=12.dp))
                 }
                 val next=plan.steps.getOrNull((session?.index ?: 0)+1)

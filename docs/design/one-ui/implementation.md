@@ -10,7 +10,7 @@ The navigation uses Map, Plan, Saved, Journeys and Settings. Service reports sta
 
 ## Layout rules
 
-Use dp for layout and sp with native system sans serif for type. Shared sizes live in AbeonaDesign.kt: 20 dp page margins, 24 dp sheet insets, 12 dp rhythm, 48 dp minimum touch targets and 56 dp primary actions. Panels use 26 dp corners, sheets 32 dp and primary actions 28 dp. Reference colours are in Theme.kt; an existing explicit device-colour preference still takes precedence.
+Use dp for layout and sp with native system sans serif for type. Shared sizes live in AbeonaDesign.kt: 20 dp page margins, 24 dp sheet insets, 12 dp rhythm, 48 dp minimum touch targets and 56 dp primary actions. Panels use 26 dp corners, sheets 32 dp and primary actions 28 dp. Reference colours are in Theme.kt. Small text on the light blue container uses #0068D1 (a slight darkening of the source accent) to exceed 4.5:1 contrast; the primary accent remains #006BD6. An existing explicit device-colour preference still takes precedence.
 
 Main content scrolls independently of pinned primary actions and navigation. Heights are minimums, not fixed text containers. System status/navigation insets belong to Android. The app does not draw a fake status bar or home indicator. Native Back is retained; there is no global Back button. Live maps remain real maps and retain the existing labelled diagram fallback.
 

@@ -93,7 +93,7 @@ import za.co.cttrains.core.*
         LazyColumn(Modifier.weight(1f),contentPadding=PaddingValues(20.dp),verticalArrangement=Arrangement.spacedBy(14.dp)) {
             item { Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.Top) { Column(Modifier.weight(1f)) { AbeonaHeading("Your routes","${from?.label.orEmpty()} → ${to?.label.orEmpty()}");Text("${runCatching { LocalDate.parse(date).format(DateTimeFormatter.ofPattern("EEE, d MMM")) }.getOrDefault(date)} · after $time",style=MaterialTheme.typography.bodySmall) };IconButton(onClick={ editTrip=true }) { Icon(Icons.Outlined.Edit,"Edit journey") } } }
         item { Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),horizontalArrangement=Arrangement.spacedBy(8.dp)) {
-            TransportService.values().forEach { service-> FilterChip(selected=service in services,onClick={ mode=service.name },label={ Text(service.title) },shape=androidx.compose.foundation.shape.RoundedCornerShape(24.dp),modifier=Modifier.heightIn(min=48.dp),colors=FilterChipDefaults.filterChipColors(containerColor=MaterialTheme.colorScheme.surface,selectedContainerColor=MaterialTheme.colorScheme.primaryContainer,selectedLabelColor=MaterialTheme.colorScheme.primary),border=null) }
+            TransportService.values().forEach { service-> FilterChip(selected=service in services,onClick={ mode=service.name },label={ Text(service.title) },shape=androidx.compose.foundation.shape.RoundedCornerShape(24.dp),modifier=Modifier.heightIn(min=48.dp),colors=FilterChipDefaults.filterChipColors(containerColor=MaterialTheme.colorScheme.surface,selectedContainerColor=MaterialTheme.colorScheme.primaryContainer,selectedLabelColor=MaterialTheme.colorScheme.onPrimaryContainer),border=null) }
         } }
         if(result.loading) item { LinearProgressIndicator(Modifier.fillMaxWidth());Text(result.progress,style=MaterialTheme.typography.labelSmall) }
         result.error?.let { error -> item { Text(error,color=MaterialTheme.colorScheme.error) } }
@@ -246,11 +246,11 @@ import za.co.cttrains.core.*
     var open by remember { mutableStateOf(false) }
     val label=if(mode=="compare") "Compare" else TransportService.valueOf(mode).title
     Box {
-        if(compact) FilledTonalButton(onClick={ open=true },colors=ButtonDefaults.filledTonalButtonColors(containerColor=MaterialTheme.colorScheme.surface),modifier=Modifier.heightIn(min=48.dp)) { DesignIcon(za.co.cttrains.app.R.drawable.abeona_train_front,tint=MaterialTheme.colorScheme.primary);Spacer(Modifier.width(10.dp));Text(label,style=MaterialTheme.typography.labelMedium);Spacer(Modifier.width(12.dp));DesignIcon(za.co.cttrains.app.R.drawable.abeona_chevron_down,modifier=Modifier.size(16.dp)) }
+        if(compact) FilledTonalButton(onClick={ open=true },colors=ButtonDefaults.filledTonalButtonColors(containerColor=MaterialTheme.colorScheme.surface,contentColor=MaterialTheme.colorScheme.onSurface),modifier=Modifier.heightIn(min=48.dp)) { DesignIcon(za.co.cttrains.app.R.drawable.abeona_train_front,tint=MaterialTheme.colorScheme.primary);Spacer(Modifier.width(10.dp));Text(label,style=MaterialTheme.typography.labelMedium);Spacer(Modifier.width(12.dp));DesignIcon(za.co.cttrains.app.R.drawable.abeona_chevron_down,modifier=Modifier.size(16.dp)) }
         else OutlinedButton(onClick={ open=true },modifier=Modifier.fillMaxWidth()) { Text("Mode of transport · $label") }
         DropdownMenu(open,{ open=false }) {
-            TransportService.values().forEach { service -> DropdownMenuItem(text={ Text(service.title) },onClick={ onMode(service.name);open=false }) }
-            DropdownMenuItem(text={ Text("Compare") },onClick={ onMode("compare");open=false })
+            TransportService.values().forEach { service -> DropdownMenuItem(text={ Text(service.title) },modifier=Modifier.testTag("provider-choice:${service.name}"),onClick={ onMode(service.name);open=false }) }
+            DropdownMenuItem(text={ Text("Compare") },modifier=Modifier.testTag("provider-choice:compare"),onClick={ onMode("compare");open=false })
         }
     }
 }

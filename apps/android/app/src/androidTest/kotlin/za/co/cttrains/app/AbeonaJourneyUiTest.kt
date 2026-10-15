@@ -75,7 +75,7 @@ class AbeonaJourneyUiTest {
     @Test fun customPlaceConfirmationAndRestartPreserveIdentity() {
         app.onNodeWithTag("nav:saved").performClick()
         app.waitUntil(15000) { app.onAllNodesWithTag("saved-addresses").fetchSemanticsNodes().isNotEmpty() }
-        app.onNodeWithTag("saved-addresses").performScrollToNode(hasTestTag("add-custom-place"))
+        app.onNodeWithTag("add-custom-place").assertIsDisplayed()
         app.onNodeWithTag("add-custom-place").performClick()
         app.onNodeWithText("Search places, stations or stops").performTextInput("Salt River");app.onNodeWithTag("place-choice:station:saltriver").performScrollTo().performClick()
         app.onNodeWithText("Place name").performTextInput("Home")
